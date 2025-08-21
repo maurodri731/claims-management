@@ -1,7 +1,9 @@
 # myapp/urls.py
 from django.urls import path
-from . import views
+from .views import ClaimListViewSet, ClaimDetailsViewSet
+from rest_framework.routers import DefaultRouter
 
-urlpatterns = [
-    path('', views.home, name='home'),
-]
+router = DefaultRouter()
+router.register(r'list', ClaimListViewSet, basename='list')
+router.register(r'details', ClaimDetailsViewSet, basename='details')
+urlpatterns = router.urls

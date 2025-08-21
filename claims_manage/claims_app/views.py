@@ -1,4 +1,12 @@
 from django.shortcuts import render
+from rest_framework.viewsets import ModelViewSet
+from .models import ClaimList, ClaimDetails
+from .serializers import ClaimListSerializer, ClaimDetailsSerializer
 
-def home(request):
-    return render(request, 'claims_app/index.html')
+class ClaimListViewSet(ModelViewSet):
+    queryset = ClaimList.objects.all()
+    serializer_class = ClaimListSerializer
+
+class ClaimDetailsViewSet(ModelViewSet):
+    queryset = ClaimDetails.objects.all()
+    serializer_class = ClaimDetailsSerializer
