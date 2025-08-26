@@ -1,11 +1,26 @@
 function listApp() {
     return {
-    list: [],
-    loading: true,
-    async fetchList() {
-        const res = await fetch("/api/list/");
-        this.list = await res.json();
-        this.loading = false;
+        list: [],
+        loading: false,
+        offset: 0,
+        limit: 100,
+        allLoaded: false,
+
+        async fetchList() {
+            if (this.loading || this.allLoaded) return;
+            this.loading = true;
+
+            const res = await fetch(`/api/list/?offset=${this.offset}&limit=${this.limit}`);
+            const data = await res.json();
+
+            if (data.results.length === 0) {
+                this.allLoaded = true;
+            } else {
+                this.list.push(...data.results);
+                this.offset += this.limit;
+            }
+
+            this.loading = false;
         }
     }
 }
