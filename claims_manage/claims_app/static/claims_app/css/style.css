@@ -6,41 +6,51 @@
 body {
     font-family: sans-serif;
     background: #f9f9f9;
-    padding: 1rem;
+    padding: 0.5rem;
     height: 100vh;
     display: grid;
-    grid-template-rows: .01fr 1fr .70fr;
+    grid-template-rows: 50px 1fr 260px;
+    gap: 3px;
+    overflow: hidden;
 }
 
 .row{
-    padding: 5px;
+    padding: 2px;
     border: 2px #333;
 }
 
 .row1{
     background-color: #f9f9f9;
-    max-height: 80px;
+    height: 50px;
+    display: flex;
+    align-items: center;
 }
 
 .row2 {
-    padding: 15px;
     background-color: #f9f9f9;
-    display: grid;
-    grid-template-rows: auto 1fr; /* Title: auto, Table: remaining space */
-    overflow: hidden; /* Prevent overflow */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
 }
 
 .row3 {
-    background-color: #3313a7;
-    min-height: 80px;
+    background-color: #f9f9f9;
+    height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 5px;
+    overflow: hidden;
 }
 
 .patients{
+    flex: 1;
     overflow-y: auto;
     overflow-x: auto;
     border: 2px solid #ccc;
     border-radius: 4px;
-    margin-top: 10px;
+    margin-top: 5px;
     min-height: 0;
 }
 
@@ -52,7 +62,7 @@ body {
 }
 
 th, td {
-    padding: 12px;
+    padding: 8px;
     text-align: left;
     border-bottom: 1px solid #ddd;
     white-space: nowrap;
@@ -81,11 +91,11 @@ h2 {
 
 .search-animated .form-control {
     width: 100%;
-    border-radius: 25px;
-    padding: 18px 55px 18px 25px;
+    border-radius: 18px;
+    padding: 12px 40px 12px 18px;
     border: 2px solid #e0e0e0;
     transition: all 0.3s ease;
-    font-size: 16px;
+    font-size: 12px;
     outline: none;
     background: white;
     box-sizing: border-box;
@@ -93,40 +103,227 @@ h2 {
 
 .search-animated .form-control:focus {
     border-color: #4CAF50;
-    box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
-    transform: scale(1.02);
+    box-shadow: 0 0 12px rgba(76, 175, 80, 0.3);
+    padding: 14px 42px 14px 20px;
+    border-radius: 20px;
+    font-size: 13px;
 }
 
 .search-animated .search-btn {
     position: absolute;
-    right: 5px;
+    right: 3px;
     top: 50%;
     transform: translateY(-50%);
     background: linear-gradient(45deg, #4CAF50, #45a049);
     border: none;
     border-radius: 50%;
-    width: 45px;
-    height: 45px;
+    width: 32px;
+    height: 32px;
     color: white;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 12px;
+}
+
+.search-animated .form-control:focus + .search-btn {
+    width: 40px;
+    height: 40px;
+    right: 2px;
+    font-size: 14px;
 }
 
 .search-animated .search-btn:hover {
-    transform: translateY(-50%) scale(1.1);
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+    width: 40px;
+    height: 40px;
+    box-shadow: 0 3px 12px rgba(76, 175, 80, 0.4);
 }
 
-/* Responsive adjustments */
+.search-animated .form-control:focus + .search-btn:hover {
+    width: 44px;
+    height: 44px;
+}
+
+
 @media (max-width: 768px) {
     .search-animated {
         max-width: 100%;
+        margin: 0 8px;
+    }
+    
+    .search-animated .form-control:focus {
+        padding: 16px 46px 16px 22px;
+        border-radius: 22px;
+        font-size: 13px;
+    }
+    
+    .search-animated .form-control:focus + .search-btn {
+        width: 38px;
+        height: 38px;
     }
     
     .form-control {
-        font-size: 16px !important; /* Prevents zoom on iOS */
+        font-size: 13px !important; /* Prevents zoom on iOS */
     }
+
+    .row3 {
+        justify-content: center;
+    }
+    
+    .card-medical {
+        max-width: 100% !important;
+    }
+}
+
+.card-medical {
+    background: white;
+    border: 2px solid #e3f2fd;
+    border-left: 5px solid #2196f3;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(33, 150, 243, 0.15);
+    position: relative;
+    max-width: 45%;
+    width: 100%;
+    height: 100%;
+    font-size: 0.72rem;
+    padding: 10px;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.card-medical:hover {
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.2);
+    transform: translateY(-2px);
+}
+
+.card-medical::before {
+    content: '\f0f8';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    color: #2196f3;
+    font-size: 0.9rem;
+    opacity: 0.4;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.patient-name {
+    color: #1976d2;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.badge {
+    background: #f44336;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.claim-info {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 6px 10px;
+    border-radius: 5px;
+    margin-bottom: 8px;
+    border-left: 3px solid #2196f3;
+    font-size: 0.68rem;
+}
+
+.claim-info strong {
+    color: #495057;
+}
+
+.financial-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.amount-card {
+    text-align: center;
+    padding: 6px 5px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.amount-card:hover {
+    background: #e9ecef;
+}
+
+.amount-value {
+    font-weight: 700;
+    font-size: 0.8rem;
+    margin-bottom: 1px;
+}
+
+.amount-value.billed {
+    color: #28a745;
+}
+
+.amount-value.paid {
+    color: #dc3545;
+}
+
+.amount-label {
+    color: #6c757d;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.insurer-info {
+    margin-bottom: 6px;
+    padding: 2px 0;
+    font-size: 0.68rem;
+}
+
+.insurer-info strong {
+    color: #495057;
+}
+
+.issue-alert {
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    border: 1px solid #feb2b2;
+    border-radius: 5px;
+    padding: 6px;
+    border-left: 3px solid #e53e3e;
+    margin-top: 0px;
+}
+
+.issue-alert strong {
+    color: #c53030;
+    display: block;
+    margin-bottom: 1px;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.issue-alert small {
+    color: #9c2a2a;
+    font-size: 0.65rem;
+    line-height: 1.2;
 }
