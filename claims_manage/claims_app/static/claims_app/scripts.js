@@ -24,3 +24,22 @@ function listApp() {
         }
     }
 }
+
+const input = document.querySelector('.search-animated input');
+const button = document.querySelector('.search-animated button');
+
+input.addEventListener('keypress', function(e) {
+if (e.key === 'Enter') {
+    const searchTerm = this.value.trim();
+    if (searchTerm) {
+            alert(`Searching for: "${searchTerm}"`);
+        }
+    }
+});
+
+button.addEventListener('click', function() {
+    const searchTerm = input.value.trim();
+    if (searchTerm) {
+        alert(`Searching for: "${searchTerm}"`);
+    }
+});

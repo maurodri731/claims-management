@@ -91,27 +91,51 @@
                     <small>Policy terminated before service date</small>
                 </div>
             </div>
+                        <div class="card-notes">
+                <div class="notes-section">
+                    <div class="section-header">
+                        <i class="fas fa-sticky-note"></i>
+                        <h4>Notes & Annotations</h4>
+                    </div>
+                    
+                    <div class="note-item admin-note">
+                        <div class="note-header">
+                            <span class="note-type">Admin Note</span>
+                            <span class="note-time">2 days ago</span>
+                        </div>
+                        <p class="note-content">Requires additional medical records for processing. Contacted provider.</p>
+                    </div>
+                    
+                    <div class="note-item system-flag">
+                        <div class="note-header">
+                            <span class="note-type b">System Flag</span>
+                            <span class="note-time">1 week ago</span>
+                        </div>
+                        <p class="note-content">Potential underpayment detected - review recommended.</p>
+                    </div>
+                </div>
+                
+                <div class="actions-section">
+                    <div class="section-header">
+                        <h4>Quick Actions</h4>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="action-btn">
+                            <i class="fas fa-flag"></i>
+                            Flag for Review
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-plus"></i>
+                            Add Note
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-file-alt"></i>
+                            Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <script>
-            // Add interactive functionality
-            const input = document.querySelector('.search-animated input');
-            const button = document.querySelector('.search-animated button');
-
-            input.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    const searchTerm = this.value.trim();
-                    if (searchTerm) {
-                        alert(`Searching for: "${searchTerm}"`);
-                    }
-                }
-            });
-
-            button.addEventListener('click', function() {
-                const searchTerm = input.value.trim();
-                if (searchTerm) {
-                    alert(`Searching for: "${searchTerm}"`);
-                }
-            });
-        </script>
 </body>
 </html>
