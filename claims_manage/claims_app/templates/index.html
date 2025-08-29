@@ -36,7 +36,10 @@
                     </thead>
                     <tbody>
                         <template x-for="patient in list" :key="patient.id">
-                            <tr>
+                            <tr x-bind:hx-get="`/api/details/?claim_id_id=${patient.id}`" 
+                            hx-swap="none" style="cursor:pointer" 
+                            role="button"
+                            @click="selectPatient(patient); $store.patientData.selectPatient(patient)">
                                 <td x-text="patient.id"></td>
                                 <td x-text="patient.patient_name"></td>
                                 <td x-text="patient.billed_amount"></td>
@@ -56,42 +59,45 @@
             </div>
         </div>
         <div class="row row3">
-         <div class="card-medical">
-                <div class="card-header">
-                    <h3 class="patient-name">Virginia Rhodes</h3>
-                    <span class="badge">Denied</span>
-                </div>
-
-                <div class="claim-info">
-                    <strong>Claim ID:</strong> 30001<br>
-                    <strong>Discharge:</strong> 12/19/2022
-                </div>
-
-                <div class="financial-summary">
-                    <div class="amount-card">
-                        <div class="amount-value billed">$639,787.37</div>
-                        <div class="amount-label">Billed</div>
+            <div x-data="detailsHandler()" class="card-medical">
+                    <div class="card-header">
+                        <h3 x-text="$store.patientData.selectedPatient?.patient_name" class="patient-name"></h3>
+                        <span class="badge">Denied</span>
                     </div>
-                    <div class="amount-card">
-                        <div class="amount-value paid">$16,001.57</div>
-                        <div class="amount-label">Paid</div>
+
+                    <div class="claim-info">
+                        <strong>Claim ID:</strong> <span x-text="$store.patientData.selectedPatient?.id"></span><br>
+                        <strong>Discharge:</strong> <span x-text="$store.patientData.selectedPatient?.discharge_date"></span>
                     </div>
-                </div>
 
-                <div class="insurer-info">
-                    <strong>Insurer:</strong> United Healthcare
-                </div>
+                    <div class="financial-summary">
+                        <div class="amount-card">
+                            <div class="amount-value billed"><span x-text="$store.patientData.selectedPatient?.billed_amount"></span></div>
+                            <div class="amount-label">Billed</div>
+                        </div>
+                        <div class="amount-card">
+                            <div class="amount-value paid"><span x-text="$store.patientData.selectedPatient?.paid_amount"></span></div>
+                            <div class="amount-label">Paid</div>
+                        </div>
+                    </div>
 
-                <div class="insurer-info">
-                    <strong>CPT Codes:</strong> 99204, 82947, 99406
-                </div>
-                
-                <div class="issue-alert" style="margin-top: 0px">
-                    <strong>Issue:</strong>
-                    <small>Policy terminated before service date</small>
-                </div>
+                    <div class="insurer-info">
+                        <strong>Insurer:</strong> <span x-text="$store.patientData.selectedPatient?.insurer_name"></span>
+                    </div>
+                    
+                    <template x-if="$store.patientData.additionalDetails && !$store.patientData.loadingDetails">
+                        <div class="insurer-info">
+                            <strong>CPT Codes:</strong> <span x-text="$store.patientData.additionalDetails?.cpt_codes || 'N/A'"></span>
+                        </div>
+                    </template>
+
+                    <div class="issue-alert" style="margin-top: 0px">
+                        <strong>Issue:</strong>
+                        <small>Policy terminated before service date</small>
+                    </div>
             </div>
-                        <div class="card-notes">
+
+            <div class="card-notes">
                 <div class="notes-section">
                     <div class="section-header">
                         <i class="fas fa-sticky-note"></i>
