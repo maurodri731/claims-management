@@ -1,27 +1,28 @@
-document.addEventListener('alpine:init', () => {
+document.addEventListener('alpine:init', () => { //handles all of patient state
     Alpine.store('patientData', {
         selectedPatient: null,
         additionalDetails: null,
-
+        loadingDetails: false,
+        
         selectPatient(patient) {
             console.log('Store: selecting patient', patient);
             this.selectedPatient = patient;
+            this.additionalDetails = null;
+            this.loadingDetails = true;
         },
-
+        
         setAdditionalDetails(details) {
-            console.log('Store: additional detials', details)
+            console.log('Store: setting additional details', details);
             this.additionalDetails = details;
+            this.loadingDetails = false;
+        },
+        
+        clearSelection() {
+            this.selectedPatient = null;
+            this.additionalDetails = null;
             this.loadingDetails = false;
         }
     });
-});
-
-document.addEventListener('htmx:afterRequest', (event) => {
-    if (event.detail.xhr?.responseURL.includes('/api/details/')) {
-        const response = JSON.parse(event.detail.xhr.response);
-        Alpine.store('patientData').setAdditionalDetails(response);
-        console.log('Additional patient data', response);
-    }
 });
 
 function listApp() {
@@ -31,41 +32,45 @@ function listApp() {
         offset: 0,
         limit: 100,
         allLoaded: false,
-        selectedClaim: null,
-        //Does HTMX need to recognize the rows on init()???
 
         init() {
             this.fetchList();
             
-            // Debug HTMX events
+            //Debug HTMX events
             document.addEventListener('htmx:beforeRequest', (e) => {
                 console.log('HTMX Request starting:', e.detail);
             });
             
             document.addEventListener('htmx:afterRequest', (e) => {
                 console.log('HTMX Request completed:', e.detail);
+                
+                //Handle additional details response
+                if (e.detail.xhr && e.detail.xhr.responseURL.includes('/api/details/')) {
+                    try {
+                        const response = JSON.parse(e.detail.xhr.response);
+                        console.log('Additional details response:', response);
+                        //Extract the actual details from the paginated response
+                        const details = response.results && response.results.length > 0 ? response.results[0] : null;
+                        console.log('Extracted details:', details);
+                        //Update the global store with the first result
+                        Alpine.store('patientData').setAdditionalDetails(details);
+                        console.log('Store after update:', Alpine.store('patientData'));
+                    } catch (error) {
+                        console.error('Error parsing additional details:', error);
+                        Alpine.store('patientData').loadingDetails = false;
+                    }
+                }
             });
             
             document.addEventListener('htmx:responseError', (e) => {
                 console.error('HTMX Response error:', e.detail);
+                Alpine.store('patientData').loadingDetails = false;
             });
         },
 
         selectPatient(patient) {
             console.log('Selected patient:', patient);
-            
-            // Send basic patient info immediately for instant display
-            const basicInfo = {
-                id: patient.id,
-                patient_name: patient.patient_name,
-                billed_amount: patient.billed_amount,
-                paid_amount: patient.paid_amount,
-                status: patient.status,
-                insurer_name: patient.insurer_name,
-                discharge_date: patient.discharge_date
-            };
-            
-            this.$dispatch('patient-selected', basicInfo);
+            Alpine.store('patientData').selectPatient(patient);//Update the global store
         },
 
         async fetchList() {
@@ -81,7 +86,7 @@ function listApp() {
                 this.list.push(...data.results);
                 this.offset += this.limit;
 
-                this.$nextTick(() => {//so that HTMX recognizes the dynamically created rows
+                this.$nextTick(() => {
                     htmx.process(this.$el);
                 });
             }
@@ -91,59 +96,8 @@ function listApp() {
     }
 }
 
-/*function detailsHandler() {
-    return {
-        selectedPatient: null,
-        additionalDetails: null,
-        loadingDetails: false,
-        
-        init() {
-            // Listen for basic patient selection events
-            console.log('Details handler initialized');
-            this.$el.addEventListener('patient-selected', (event) => {
-                console.log('Event received in details handler:', event.detail);
-                this.selectedPatient = event.detail;
-                this.additionalDetails = null; // Reset additional details
-                this.loadingDetails = true; // Show loading state
-                console.log('selectedPatient set to:', this.selectedPatient);
-            });
-            
-            // Also listen on document level in case event bubbling is an issue
-            document.addEventListener('patient-selected', (event) => {
-                console.log('Document level event received:', event.detail);
-                this.selectedPatient = event.detail;
-                this.additionalDetails = null;
-                this.loadingDetails = true;
-            });
-            
-            // Listen for HTMX additional details
-            document.addEventListener('htmx:afterRequest', (event) => {
-                if (event.detail.xhr?.responseURL.includes('/api/details/')) {
-                    try {
-                        /*const response = JSON.parse(event.detail.xhr.response);
-                        console.log('Received additional details:', response);
-                        this.additionalDetails = response;
-                        this.loadingDetails = false;
-                        const response = JSON.parse(event.detail.xhr.response);
-                        Alpine.store('patientData').setAdditionalDetails(response);
-                        console.log('Additional patient data', response);
-                    } catch (error) {
-                        console.error('Error parsing additional details:', error);
-                        this.loadingDetails = false;
-                    }
-                }
-            });
-            
-            document.addEventListener('htmx:responseError', (event) => {
-                console.error('HTMX error:', event.detail);
-                this.loadingDetails = false;
-            });
-        }
-    }
-}*/
 
-//Animations for the search bar
-document.addEventListener('DOMContentLoaded' , function () {
+document.addEventListener('DOMContentLoaded', function () {
     const input = document.querySelector('.search-animated input');
     const button = document.querySelector('.search-animated button');
 
@@ -151,7 +105,7 @@ document.addEventListener('DOMContentLoaded' , function () {
         const searchTerm = input.value.trim();
         if (searchTerm) {
             console.log(`Searching for: "${searchTerm}"`);
-            // Implement your search logic here
+            // Implement search logic here
         }
     }
 
