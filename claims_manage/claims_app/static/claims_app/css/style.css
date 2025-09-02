@@ -70,16 +70,37 @@ th, td {
     white-space: nowrap;
 }
 
+td {
+    border-bottom: 1px solid #e8f4f8;
+    background: white;
+    transition: all 0.3s ease;
+    scrollbar-color: #667eea;
+}
+
 th {
-    background-color: #f5f5f5;
     font-weight: bold;
     position: sticky;
     top: 0;
     z-index: 1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.75em;
+    border: none;
 }
 
 tr:hover {
     background-color: #f9f9f9;
+}
+
+tr:nth-child(even) td {
+    background: #f8fbff;
+}
+
+tr:hover td {
+    background: #e3f2fd !important;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
 }
 
 h2 {
@@ -231,8 +252,7 @@ h2 {
     margin: 0;
 }
 
-.badge {
-    background: #f44336;
+.s {
     color: white;
     padding: 3px 8px;
     border-radius: 12px;
@@ -240,6 +260,18 @@ h2 {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.3px;
+}
+
+.denied {
+    background: #f44336;
+}
+
+.under-review {
+    background: #2196f3;
+}
+
+.paid {
+    background: #2eb92e;
 }
 
 .claim-info {
@@ -285,7 +317,7 @@ h2 {
     color: #28a745;
 }
 
-.amount-value.paid {
+.amount-value.paid-info {
     color: #dc3545;
 }
 
@@ -308,7 +340,7 @@ h2 {
 }
 
 .issue-alert {
-    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    background: linear-gradient(135deg, #f9d3d3 0%, #f8f9fa 100%);
     border: 1px solid #feb2b2;
     border-radius: 5px;
     padding: 6px;
@@ -494,6 +526,7 @@ h2 {
     overflow-y: auto;
     box-shadow: 0 25px 50px rgba(25, 118, 210, 0.3);
     animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    scrollbar-width: none;
 }
 
 @keyframes modalSlideIn {
@@ -531,8 +564,6 @@ h2 {
 
 /* Add medical icon to title */
 .modal-title::before {
-    content: '\f0f8';
-    font-family: 'Font Awesome 6 Free';
     font-weight: 900;
     font-size: 1.2rem;
 }
@@ -707,6 +738,6 @@ h2 {
     height: 100%
 }*/
 
-.modal-content::-webkit-scrollbar {
+/*.modal-content::-webkit-scrollbar {
     display: none;
-}
+}*/
