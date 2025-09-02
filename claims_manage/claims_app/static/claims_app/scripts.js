@@ -23,6 +23,9 @@ document.addEventListener('alpine:init', () => { //handles all of patient state
             this.loadingDetails = false;
         }
     });
+    Alpine.store('modalStore', {
+        openModal: false
+    });
 });
 
 function listApp() {
@@ -117,3 +120,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
     button.addEventListener('click', handleSearch);
 });
+
+function modalApp() {
+    return {
+        clearFilters() {
+            // Clear all form inputs in the modal
+            const modal = this.$el.closest('.modal-overlay');
+            const inputs = modal.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                if (input.type === 'checkbox' || input.type === 'radio') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
+        },
+        applyFilters() {
+            // Collect filter values and apply them
+            // You can implement your filtering logic here
+            console.log('Applying filters...');
+            this.$store.modalStore.openModal = false;
+        }
+    }
+}
