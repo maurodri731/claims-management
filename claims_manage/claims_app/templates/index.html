@@ -97,43 +97,67 @@
             </div>
         </div>
         
-        <div class="row row2">
-            <div class="patients"x-data="listApp()" x-init="fetchList()">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>id</th>
-                            <th>patient name</th>
-                            <th>billed amount</th>
-                            <th>paid amount</th>
-                            <th>status</th>
-                            <th>insurer</th>
-                            <th>discharge date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="patient in list" :key="patient.id">
-                            <tr x-bind:hx-get="`/api/details/?claim_id_id=${patient.id}`" 
-                            hx-swap="none" style="cursor:pointer" 
-                            role="button"
-                            @click="selectPatient(patient); $store.patientData.selectPatient(patient)">
-                                <td x-text="patient.id"></td>
-                                <td x-text="patient.patient_name"></td>
-                                <td x-text="patient.billed_amount"></td>
-                                <td x-text="patient.paid_amount"></td>
-                                <td x-text="patient.status"></td>
-                                <td x-text="patient.insurer_name"></td>
-                                <td x-text="patient.discharge_date"></td>
-                            </tr>
-                        </template>
+<div class="row row2">
+    <div class="patients" x-data="listApp()" x-init="fetchList()">
+        <table>
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>patient name</th>
+                    <th>billed amount</th>
+                    <th>paid amount</th>
+                    <th>status</th>
+                    <th>insurer</th>
+                    <th>discharge date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Show search results count when in search mode -->
+                <tr x-show="isSearchMode && list.length > 0">
+                    <td colspan="7" class="text-center" style="font-weight: bold; background-color: #f0f9ff; padding: 10px;">
+                        Found <span x-text="list.length"></span> result(s) for "<span x-text="searchTerm"></span>"
+                        <button @click="clearSearch()" style="margin-left: 10px; background: #ef4444; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Clear Search</button>
+                    </td>
+                </tr>
 
-                        <tr x-show="!allLoaded" x-intersect="fetchList()">
-                            <td colspan="7" class="text-center">Loading more...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                <template x-for="patient in list" :key="patient.id">
+                    <tr :hx-get="`/api/details/?claim_id_id=${patient.id}`" 
+                    hx-swap="none" 
+                    style="cursor:pointer" 
+                    role="button"
+                    @click="selectPatient(patient); $store.patientData.selectPatient(patient)"
+                    x-init="htmx.process($el)">
+                        <td x-text="patient.id"></td>
+                        <td x-text="patient.patient_name"></td>
+                        <td x-text="patient.billed_amount"></td>
+                        <td x-text="patient.paid_amount"></td>
+                        <td x-text="patient.status"></td>
+                        <td x-text="patient.insurer_name"></td>
+                        <td x-text="patient.discharge_date"></td>
+                    </tr>
+                </template>
+
+                <!-- Show infinite scroll loader only when not in search mode -->
+                <tr x-show="shouldShowLoader()" x-intersect="fetchList()">
+                    <td colspan="7" class="text-center">Loading more...</td>
+                </tr>
+                
+                <!-- Show message when no search results -->
+                <tr x-show="isSearchMode && list.length === 0 && !loading">
+                    <td colspan="7" class="text-center" style="padding: 20px; color: #6b7280;">
+                        No results found for "<span x-text="searchTerm"></span>"
+                        <button @click="clearSearch()" style="margin-left: 10px; background: #ef4444; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Clear Search</button>
+                    </td>
+                </tr>
+
+                <!-- Show loading state during search -->
+                <tr x-show="isSearchMode && loading">
+                    <td colspan="7" class="text-center">Searching...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
     <div class="row row3" x-data="{}">
         <template x-if="$store.patientData.selectedPatient">

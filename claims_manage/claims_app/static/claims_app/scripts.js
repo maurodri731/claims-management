@@ -23,7 +23,7 @@ document.addEventListener('alpine:init', () => { //handles all of patient state
             this.loadingDetails = false;
         }
     });
-    Alpine.store('modalStore', {
+    Alpine.store('modalStore', {//handle the modal's state, will make it so that filters persist if there are any 
         openModal: false
     });
 });
@@ -35,6 +35,8 @@ function listApp() {
         offset: 0,
         limit: 100,
         allLoaded: false,
+        isSearchMode: false,
+        searchTerm: '',
 
         init() {
             this.fetchList();
@@ -69,6 +71,16 @@ function listApp() {
                 console.error('HTMX Response error:', e.detail);
                 Alpine.store('patientData').loadingDetails = false;
             });
+
+            // Listen for search events from the search component
+            document.addEventListener('searchPatient', (e) => {
+                this.handleSearch(e.detail.searchTerm);
+            });
+
+            // Listen for clear search events
+            document.addEventListener('clearSearch', () => {
+                this.clearSearch();
+            });
         },
 
         selectPatient(patient) {
@@ -77,7 +89,7 @@ function listApp() {
         },
 
         async fetchList() {
-            if (this.loading || this.allLoaded) return;
+            if (this.loading || this.allLoaded || this.isSearchMode) return;
             this.loading = true;
 
             const res = await fetch(`/api/list/?offset=${this.offset}&limit=${this.limit}`);
@@ -88,13 +100,48 @@ function listApp() {
             } else {
                 this.list.push(...data.results);
                 this.offset += this.limit;
+            }
+            this.loading = false;
+        },
 
-                this.$nextTick(() => {
-                    htmx.process(this.$el);
-                });
+        async handleSearch(searchTerm) {
+            if (!searchTerm.trim()) {
+                this.clearSearch();
+                return;
+            }
+
+            this.loading = true;
+            this.isSearchMode = true;
+            this.searchTerm = searchTerm;
+
+            try {
+                const res = await fetch(`/api/list/?id=${encodeURIComponent(searchTerm)}`);
+                const data = await res.json();
+
+                // Replace the list with search results
+                this.list = data.results || [];
+
+                console.log(`Search completed for "${searchTerm}": ${this.list.length} results found`);
+            } catch (error) {
+                console.error('Search error:', error);
+                this.list = [];
             }
 
             this.loading = false;
+        },
+
+        clearSearch() {
+            this.isSearchMode = false;
+            this.searchTerm = '';
+            this.list = [];
+            this.offset = 0;
+            this.allLoaded = false;
+            this.fetchList(); // Reload the original list
+        },
+
+        // Method to check if we should show the infinite scroll loader
+        shouldShowLoader() {
+            return !this.allLoaded && !this.isSearchMode;
         }
     }
 }
@@ -108,17 +155,32 @@ document.addEventListener('DOMContentLoaded', function () {
         const searchTerm = input.value.trim();
         if (searchTerm) {
             console.log(`Searching for: "${searchTerm}"`);
-            // Implement search logic here
+            // Dispatch custom event to the list component
+            document.dispatchEvent(new CustomEvent('searchPatient', {
+                detail: { searchTerm: searchTerm }
+            }));
+        } else {
+            // If search term is empty, clear the search
+            document.dispatchEvent(new CustomEvent('clearSearch'));
         }
     }
 
+    // Handle Enter key press
     input.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             handleSearch();
         }
     });
 
+    // Handle search button click
     button.addEventListener('click', handleSearch);
+
+    // Handle input clearing (when user deletes all text)
+    input.addEventListener('input', function(e) {
+        if (!e.target.value.trim()) {
+            document.dispatchEvent(new CustomEvent('clearSearch'));
+        }
+    });
 });
 
 function modalApp() {
