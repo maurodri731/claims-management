@@ -7,7 +7,8 @@ class ClaimListViewSet(ModelViewSet):
     queryset = ClaimList.objects.all()
     serializer_class = ClaimListSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['id', 'patient_name']
+    filterset_fields = {'id' : ['exact'], 
+                        'patient_name' : ['exact', 'icontains']}
 
 class ClaimDetailsViewSet(ModelViewSet):
     queryset = ClaimDetails.objects.all()

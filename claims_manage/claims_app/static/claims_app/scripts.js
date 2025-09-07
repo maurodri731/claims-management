@@ -115,11 +115,14 @@ function listApp() {
             this.searchTerm = searchTerm;
 
             try {
-                const res = await fetch(`/api/list/?id=${encodeURIComponent(searchTerm)}`);
-                const data = await res.json();
-
+                let res = await fetch(`/api/list/?patient_name=${encodeURIComponent(searchTerm)}`);//exact search
+                let data = await res.json();
+                if(data.results.length === 0){//even when nothing is found using the exact search, the server DOES return an object, NOT 404, so response.ok isn't needed
+                    res = await fetch(`/api/list/?patient_name__icontains=${encodeURIComponent(searchTerm)}`)
+                    data = await res.json()
+                }
                 // Replace the list with search results
-                this.list = data.results || [];
+                this.list = data.results || [];//keep the results wrapped inside a paginated object to accomodate for exact and inexact search at the same time
 
                 console.log(`Search completed for "${searchTerm}": ${this.list.length} results found`);
             } catch (error) {
@@ -127,7 +130,7 @@ function listApp() {
                 this.list = [];
             }
 
-            this.loading = false;
+            this.loading = false
         },
 
         clearSearch() {
@@ -136,10 +139,10 @@ function listApp() {
             this.list = [];
             this.offset = 0;
             this.allLoaded = false;
-            this.fetchList(); // Reload the original list
+            this.fetchList();//Reload the original list
         },
 
-        // Method to check if we should show the infinite scroll loader
+        //Method to check if we should show the infinite scroll loader
         shouldShowLoader() {
             return !this.allLoaded && !this.isSearchMode;
         }
@@ -155,27 +158,27 @@ document.addEventListener('DOMContentLoaded', function () {
         const searchTerm = input.value.trim();
         if (searchTerm) {
             console.log(`Searching for: "${searchTerm}"`);
-            // Dispatch custom event to the list component
+            //Dispatch custom event to the list component
             document.dispatchEvent(new CustomEvent('searchPatient', {
                 detail: { searchTerm: searchTerm }
             }));
         } else {
-            // If search term is empty, clear the search
+            //If search term is empty, clear the search
             document.dispatchEvent(new CustomEvent('clearSearch'));
         }
     }
 
-    // Handle Enter key press
+    //Handle Enter key press
     input.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             handleSearch();
         }
     });
 
-    // Handle search button click
+    //Handle search button click
     button.addEventListener('click', handleSearch);
 
-    // Handle input clearing (when user deletes all text)
+    //Handle input clearing (when user deletes all text)
     input.addEventListener('input', function(e) {
         if (!e.target.value.trim()) {
             document.dispatchEvent(new CustomEvent('clearSearch'));
@@ -186,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
 function modalApp() {
     return {
         clearFilters() {
-            // Clear all form inputs in the modal
+            //Clear all form inputs in the modal
             const modal = this.$el.closest('.modal-overlay');
             const inputs = modal.querySelectorAll('input, select');
             inputs.forEach(input => {
@@ -198,8 +201,8 @@ function modalApp() {
             });
         },
         applyFilters() {
-            // Collect filter values and apply them
-            // You can implement your filtering logic here
+            //Collect filter values and apply them
+            //You can implement your filtering logic here
             console.log('Applying filters...');
             this.$store.modalStore.openModal = false;
         }
