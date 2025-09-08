@@ -595,7 +595,7 @@ h2 {
 /* Modal Sections Grid */
 .modal-sections {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 2rem;
 }
 
@@ -741,3 +741,75 @@ h2 {
 /*.modal-content::-webkit-scrollbar {
     display: none;
 }*/
+.filter-btn.filter-active {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.filter-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clear-filters-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 8px;
+    font-size: 14px;
+}
+
+.clear-filters-btn:hover {
+    background: #dc2626;
+}
+
+.active-filters-bar {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.active-filters-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #1e40af;
+    font-size: 14px;
+}
+
+.clear-filters-small {
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid #ef4444;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.clear-filters-small:hover {
+    background: #ef4444;
+    color: white;
+}
+
+.filter-btn {
+    position: relative;
+}
