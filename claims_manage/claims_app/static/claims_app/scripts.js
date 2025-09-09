@@ -4,6 +4,11 @@ function modalApp() {
         init() {
             //Initialize form values with stored filters
             this.loadFormValues();
+            
+            // NEW FIX: Listen for external filter clearing
+            document.addEventListener('filtersStoreCleared', () => {
+                this.clearFormInputs();
+            });
         },
 
         loadFormValues() {
@@ -38,9 +43,11 @@ function modalApp() {
             });
         },
 
-        clearFilters() {
-            //Clear all form inputs in the modal
+        // NEW METHOD: Clear form inputs without affecting store
+        clearFormInputs() {
             const modal = this.$el.closest('.modal-overlay');
+            if (!modal) return;
+            
             const inputs = modal.querySelectorAll('input, select');
             inputs.forEach(input => {
                 if (input.type === 'checkbox' || input.type === 'radio') {
@@ -49,6 +56,13 @@ function modalApp() {
                     input.value = '';
                 }
             });
+            
+            console.log('Modal form inputs cleared due to external filter clear');
+        },
+
+        clearFilters() {
+            //Clear all form inputs in the modal
+            this.clearFormInputs();
             
             //Also clear the store
             this.$store.modalStore.clearAllFilters();
@@ -119,3 +133,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+
+window.formatCurrency = function(value) {
+    if (!value && value !== 0) return '';
+    const num = parseFloat(value);
+    if (isNaN(num)) return value;
+    return '$' + num.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+};

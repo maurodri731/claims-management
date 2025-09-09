@@ -65,7 +65,7 @@ body {
 
 th, td {
     padding: 8px;
-    text-align: left;
+    text-align: center;
     border-bottom: 1px solid #ddd;
     white-space: nowrap;
 }
@@ -658,7 +658,6 @@ h2 {
     padding: 1.5rem 2rem;
     border-top: 2px solid #e3f2fd;
     display: flex;
-    justify-content: flex-end;
     gap: 1rem;
     background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
     border-radius: 0 0 17px 17px;

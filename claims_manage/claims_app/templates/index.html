@@ -6,9 +6,9 @@
     <title>Claims Management</title>
     <link rel="stylesheet" href="{% static 'claims_app/css/style.css' %}">
      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="{% static 'claims_app/store.js' %}"></script>
-    <script src="{% static 'claims_app/scripts.js' %}"></script>
-    <script src="{% static 'claims_app/list.js' %}"></script>
+    <script defer src="{% static 'claims_app/store.js' %}"></script>
+    <script defer src="{% static 'claims_app/scripts.js' %}"></script>
+    <script defer src="{% static 'claims_app/list.js' %}"></script>
     <script defer src="https://unpkg.com/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://unpkg.com/htmx.org@2.x.x"></script>
@@ -53,6 +53,17 @@
             </div>
             
             <div class="modal-body">
+                <div class="modal-actions" style="justify-content: flex-start;">
+                    <button class="btn btn-secondary" @click="clearFilters()">
+                        Clear All
+                    </button>
+                    <button class="btn btn-secondary" @click="$store.modalStore.openModal = false">
+                        Cancel
+                    </button>
+                    <button class="btn btn-primary" @click="applyFilters()">
+                        Apply Filters
+                    </button>
+                </div>
                 <!-- Filter By Section -->
                 <div class="modal-section">
                     <h3 class="section-title">
@@ -109,7 +120,7 @@
                     </div>
                 </div>
 
-                <div class="modal-actions">
+                <div class="modal-actions" style="justify-content: flex-end;">
                     <button class="btn btn-secondary" @click="clearFilters()">
                         Clear All
                     </button>
@@ -167,9 +178,11 @@
                         x-init="htmx.process($el)">
                             <td x-text="patient.id"></td>
                             <td x-text="patient.patient_name"></td>
-                            <td x-text="patient.billed_amount"></td>
-                            <td x-text="patient.paid_amount"></td>
-                            <td x-text="patient.status"></td>
+                            <td x-text="formatCurrency(patient.billed_amount)"></td>
+                            <td x-text="formatCurrency(patient.paid_amount)"></td>
+                            <td><span x-text="patient.status" 
+                                x-bind:class="'s ' + patient.status.toLowerCase().replace(' ', '-')"></span>
+                            </td>
                             <td x-text="patient.insurer_name"></td>
                             <td x-text="patient.discharge_date"></td>
                         </tr>
@@ -226,13 +239,13 @@
                 <div class="financial-summary">
                     <div class="amount-card">
                         <div class="amount-value billed">
-                            <span x-text="$store.patientData.selectedPatient?.billed_amount"></span>
+                            <span x-text="formatCurrency($store.patientData.selectedPatient?.billed_amount)"></span>
                         </div>
                         <div class="amount-label">Billed</div>
                     </div>
                     <div class="amount-card">
                         <div class="amount-value paid-info">
-                            <span x-text="$store.patientData.selectedPatient?.paid_amount"></span>
+                            <span x-text="formatCurrency($store.patientData.selectedPatient?.paid_amount)"></span>
                         </div>
                         <div class="amount-label">Paid</div>
                     </div>
