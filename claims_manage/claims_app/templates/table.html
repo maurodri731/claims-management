@@ -35,7 +35,8 @@
                 <template x-for="patient in list" :key="patient.id">
                     <tr :hx-get="`/api/details/?claim_id_id=${patient.id}`" 
                     hx-swap="none" 
-                    style="cursor:pointer" 
+                    style="cursor:pointer"
+                    x-bind:class="patient.flag === false ? 'flag-false' : 'flag-true'"  
                     role="button"
                     @click="selectPatient(patient); $store.patientData.selectPatient(patient)"
                     x-init="htmx.process($el)">
