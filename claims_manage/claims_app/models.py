@@ -8,6 +8,7 @@ class ClaimList(models.Model):
     status = models.CharField(max_length=20)
     insurer_name = models.CharField(max_length=50)
     discharge_date = models.DateField()
+    flag = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.patient_name} - {self.billed_amount} - {self.paid_amount} - {self.status} - {self.insurer_name} on {self.discharge_date}"

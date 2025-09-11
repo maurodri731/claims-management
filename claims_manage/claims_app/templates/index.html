@@ -269,7 +269,7 @@
                 
                 <template x-if="$store.patientData.additionalDetails && !$store.patientData.loadingDetails">
                     <div class="issue-alert" style="margin-top: 0px">
-                        <strong>Issue:</strong>
+                        <strong>Denial Reason:</strong>
                         <small x-text="$store.patientData.additionalDetails.denial_reason || 'N/A'"></small>
                     </div>
                 </template>
@@ -320,10 +320,6 @@
                     <button class="action-btn">
                         <i class="fas fa-plus"></i>
                         Add Note
-                    </button>
-                    <button class="action-btn">
-                        <i class="fas fa-file-alt"></i>
-                        Generate Report
                     </button>
                 </div>
             </div>

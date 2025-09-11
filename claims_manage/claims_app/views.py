@@ -13,7 +13,8 @@ class ClaimListViewSet(ModelViewSet):
                         'insurer_name' : ['exact'],
                         'billed_amount' : ['exact', 'gte', 'lte'],
                         'paid_amount' : ['exact', 'gte', 'lte'],
-                        'discharge_date' : ['exact', 'gte', 'lte']}
+                        'discharge_date' : ['exact', 'gte', 'lte'],
+                        'flag' : ['exact']}
 
 class ClaimDetailsViewSet(ModelViewSet):
     queryset = ClaimDetails.objects.all()
