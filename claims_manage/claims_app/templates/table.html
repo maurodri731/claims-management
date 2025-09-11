@@ -1,0 +1,85 @@
+<div class="row row2">
+    <div class="patients" x-data="listApp()" x-init="fetchList()">
+        <!-- Show active filters indicator -->
+        <div x-show="hasActiveFilters()" class="active-filters-bar">
+            <div class="active-filters-content">
+                <i class="fas fa-filter"></i>
+                <span x-text="`${getActiveFiltersCount()} filter(s) active`"></span>
+                <button class="clear-filters-small" @click="document.dispatchEvent(new CustomEvent('filtersCleared'))">
+                    Clear all
+                </button>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Patient Name</th>
+                    <th>Billed Amount</th>
+                    <th>Paid Amount</th>
+                    <th>Status</th>
+                    <th>Insurer</th>
+                    <th>Discharge Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Show search results count when in search mode -->
+                <tr x-show="isSearchMode && list.length > 0">
+                    <td colspan="7" class="text-center" style="font-weight: bold; background-color: #f0f9ff; padding: 10px;">
+                        Found <span x-text="list.length"></span> result(s) for "<span x-text="searchTerm"></span>"
+                        <button @click="clearSearch()" style="margin-left: 10px; background: #ef4444; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Clear Search</button>
+                    </td>
+                </tr>
+
+                <template x-for="patient in list" :key="patient.id">
+                    <tr :hx-get="`/api/details/?claim_id_id=${patient.id}`" 
+                    hx-swap="none" 
+                    style="cursor:pointer" 
+                    role="button"
+                    @click="selectPatient(patient); $store.patientData.selectPatient(patient)"
+                    x-init="htmx.process($el)">
+                        <td x-text="patient.id"></td>
+                        <td x-text="patient.patient_name"></td>
+                        <td x-text="formatCurrency(patient.billed_amount)"></td>
+                        <td x-text="formatCurrency(patient.paid_amount)"></td>
+                        <td><span x-text="patient.status" 
+                            x-bind:class="'s ' + patient.status.toLowerCase().replace(' ', '-')"></span>
+                        </td>
+                        <td x-text="patient.insurer_name"></td>
+                        <td x-text="patient.discharge_date"></td>
+                    </tr>
+                </template>
+
+                <!-- Show infinite scroll loader only when not in search mode -->
+                <tr x-show="shouldShowLoader()" x-intersect="fetchList()">
+                    <td colspan="7" class="text-center">Loading more...</td>
+                </tr>
+                
+                <!-- Show message when no search results -->
+                <tr x-show="isSearchMode && list.length === 0 && !loading">
+                    <td colspan="7" class="text-center" style="padding: 20px; color: #6b7280;">
+                        No results found for "<span x-text="searchTerm"></span>"
+                        <button @click="clearSearch()" style="margin-left: 10px; background: #ef4444; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Clear Search</button>
+                    </td>
+                </tr>
+
+                <!-- Show loading state during search -->
+                <tr x-show="isSearchMode && loading">
+                    <td colspan="7" class="text-center">Searching...</td>
+                </tr>
+                
+                <!-- Show no results when filters return empty -->
+                <tr x-show="!isSearchMode && !loading && list.length === 0 && hasActiveFilters()">
+                    <td colspan="7" class="text-center" style="padding: 20px; color: #6b7280;">
+                        No results match your current filters.
+                        <button @click="document.dispatchEvent(new CustomEvent('filtersCleared'))" 
+                                style="margin-left: 10px; background: #ef4444; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+                            Clear Filters
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

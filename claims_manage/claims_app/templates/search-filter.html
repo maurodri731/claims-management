@@ -1,0 +1,120 @@
+<div class="row row1">
+    <div class="search-animated">
+        <input type="text" class="form-control" placeholder="Search by Name or Claim ID">
+        <button class="search-btn" type="button">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+    <!-- Enhanced filter button with active filters indicator -->
+    <button class="filter-btn" x-data @click="$store.modalStore.openModal = true" 
+            :class="{ 'filter-active': $store.modalStore.hasActiveFilters() }">
+        <i class="fa-solid fa-filter fa-xl"></i>
+        <!-- Show count of active filters -->
+        <template x-if="$store.modalStore.hasActiveFilters()">
+            <span class="filter-count" x-text="Object.values($store.modalStore.filters).filter(v => v !== '').length"></span>
+        </template>
+    </button>
+    
+    <!-- Clear filters button (only shown when filters are active) -->
+    <template x-if="$store.modalStore.hasActiveFilters()">
+        <button class="clear-filters-btn" @click="document.dispatchEvent(new CustomEvent('filtersCleared'))" 
+                title="Clear all filters">
+            <i class="fas fa-times"></i>
+            Clear Filters
+        </button>
+    </template>
+</div>
+
+    <!-- Enhanced modal with proper form structure -->
+<div x-data="modalApp()" x-show="$store.modalStore.openModal" x-transition class="modal-overlay" 
+        @click.self="$store.modalStore.openModal = false">
+    <div class="modal-content" @click.stop>
+        <div class="modal-header">
+            <h2 class="modal-title">Advanced Search & Filter</h2>
+            <button class="modal-close" @click="$store.modalStore.openModal = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="modal-actions" style="justify-content: flex-start;">
+                <button class="btn btn-secondary" @click="clearFilters()">
+                    Clear All
+                </button>
+                <button class="btn btn-secondary" @click="$store.modalStore.openModal = false">
+                    Cancel
+                </button>
+                <button class="btn btn-primary" @click="applyFilters()">
+                    Apply Filters
+                </button>
+            </div>
+            <!-- Filter By Section -->
+            <div class="modal-section">
+                <h3 class="section-title">
+                    <i class="fas fa-filter"></i>
+                    Filter By
+                </h3>
+                
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="Denied">Denied</option>
+                        <option value="Under Review">Under Review</option>
+                        <option value="Paid">Paid</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Insurer</label>
+                    <select class="form-select" name="insurer">
+                        <option value="">All Insurers</option>
+                        <option value="United Healthcare">United Healthcare</option>
+                        <option value="Blue Cross">Blue Cross</option>
+                        <option value="Cigna">Cigna</option>
+                        <option value="Self Funded Inc.">Self Funded Inc.</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Date Range</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="date" class="form-input" name="dateFrom" style="flex: 1;">
+                        <span style="align-self: center; color: #6b7280;">to</span>
+                        <input type="date" class="form-input" name="dateTo" style="flex: 1;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Paid Amount</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input name="paid" type="number" class="form-input" name="paidMin" placeholder="Min" style="flex: 1;">
+                        <span style="align-self: center; color: #6b7280;">to</span>
+                        <input name="paid" type="number" class="form-input" name="paidMax" placeholder="Max" style="flex: 1;">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Billed Amount</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input name="billed" type="number" class="form-input" name="amountMin" placeholder="Min" style="flex: 1;">
+                        <span style="align-self: center; color: #6b7280;">to</span>
+                        <input name="billed" type="number" class="form-input" name="amountMax" placeholder="Max" style="flex: 1;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="justify-content: flex-end;">
+                <button class="btn btn-secondary" @click="clearFilters()">
+                    Clear All
+                </button>
+                <button class="btn btn-secondary" @click="$store.modalStore.openModal = false">
+                    Cancel
+                </button>
+                <button class="btn btn-primary" @click="applyFilters()">
+                    Apply Filters
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

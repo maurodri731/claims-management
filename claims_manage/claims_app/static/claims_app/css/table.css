@@ -1,0 +1,130 @@
+.row2 {
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.patients{
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    margin-top: 5px;
+    min-height: 0;
+}
+
+ table {
+    font-size: .8em;
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; 
+}
+
+th, td {
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+}
+
+td {
+    border-bottom: 1px solid #e8f4f8;
+    background: white;
+    transition: all 0.3s ease;
+    scrollbar-color: #667eea;
+}
+
+th {
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.75em;
+    border: none;
+}
+
+tr:hover {
+    background-color: #f9f9f9;
+}
+
+tr:nth-child(even) td {
+    background: #f8fbff;
+}
+
+tr:hover td {
+    background: #e3f2fd !important;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+}
+
+h2 {
+    margin-bottom: 10px;
+}
+
+.search-animated {
+    width: 90%;
+    position: relative;
+}
+
+.search-animated .form-control {
+    width: 100%;
+    border-radius: 18px;
+    padding: 12px 40px 12px 18px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+    font-size: 12px;
+    outline: none;
+    background: white;
+    box-sizing: border-box;
+}
+
+.search-animated .form-control:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 12px rgba(76, 175, 80, 0.3);
+    padding: 14px 42px 14px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+.search-animated .search-btn {
+    position: absolute;
+    right: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.search-animated .form-control:focus + .search-btn {
+    width: 40px;
+    height: 40px;
+    right: 2px;
+    font-size: 14px;
+}
+
+.search-animated .search-btn:hover {
+    width: 40px;
+    height: 40px;
+    box-shadow: 0 3px 12px rgba(76, 175, 80, 0.4);
+}
+
+.search-animated .form-control:focus + .search-btn:hover {
+    width: 44px;
+    height: 44px;
+}
