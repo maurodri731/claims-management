@@ -17,6 +17,7 @@ class ClaimDetails(models.Model):
     claim_id = models.ForeignKey(ClaimList, on_delete=models.CASCADE, related_name="claims")
     denial_reason = models.CharField(max_length=200, null=True)
     cpt_codes= models.CharField(max_length=200)
+    flag_stamp = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.claim_id} - {self.denial_reason} - {self.cpt_codes}"
