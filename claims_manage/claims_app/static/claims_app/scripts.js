@@ -143,3 +143,35 @@ window.formatCurrency = function(value) {
         maximumFractionDigits: 2
     });
 };
+
+function notesApp() {
+    return {
+        noteText: '',
+        charCount: 0,
+        
+        get isFlagged() {
+            return this.$store.patientData.selectedPatient?.flag || false;
+        },
+
+        toggleFlag() {
+            // Don't set this.isFlagged - instead update the store directly
+            if (this.$store.patientData.selectedPatient) {
+                this.$store.patientData.selectedPatient.flag = !this.$store.patientData.selectedPatient.flag;
+                console.log('Flag toggled:', this.$store.patientData.selectedPatient.flag ? 'Flagged' : 'Unflagged');
+            }
+        },
+        
+        updateCharCount() {
+            this.charCount = this.noteText.length;
+        },
+        
+        submitNote() {
+            if (this.noteText.trim().length > 0) {
+                console.log('Note submitted:', this.noteText);
+                alert('Note submitted: ' + this.noteText);
+                this.noteText = '';
+                this.charCount = 0;
+            }
+        }
+    }
+}

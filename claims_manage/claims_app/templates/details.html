@@ -59,46 +59,57 @@
             <h3 class="card-header">Choose a claim from the table</h3>
         </div>
     </template>
-    
-    <div class="card-notes">
-        <div class="notes-section">
+
+    <template x-if="!$store.patientData.selectedPatient">
+        <div class="card-notes">
+            <h3 class="card-header">Choose a claim from the table</h3>
+        </div>
+    </template>
+
+    <template x-if="$store.patientData.selectedPatient">
+        <div class="card-notes" x-data="notesApp()">
             <div class="section-header">
                 <i class="fas fa-sticky-note"></i>
                 <h4>Notes & Annotations</h4>
             </div>
             
-            <div class="note-item admin-note">
-                <div class="note-header">
-                    <span class="note-type">Admin Note</span>
-                    <span class="note-time">2 days ago</span>
-                </div>
-                <p class="note-content">Requires additional medical records for processing. Contacted provider.</p>
-            </div>
-            
-            <div class="note-item system-flag">
-                <div class="note-header">
-                    <span class="note-type b">System Flag</span>
-                    <span class="note-time">1 week ago</span>
-                </div>
-                <p class="note-content">Potential underpayment detected - review recommended.</p>
-            </div>
-        </div>
-        
-        <div class="actions-section">
-            <div class="section-header">
-                <h4>Quick Actions</h4>
-            </div>
-            
-            <div class="action-buttons">
-                <button class="action-btn">
-                    <i class="fas fa-flag"></i>
-                    Flag for Review
-                </button>
-                <button class="action-btn">
-                    <i class="fas fa-plus"></i>
-                    Add Note
+            <div class="flag-section">
+                <button 
+                    class="flag-btn" 
+                    x-bind:class="{ 'flagged' : isFlagged }"
+                    @click="toggleFlag()"
+                >
+                    <i :class="isFlagged ? 'fas fa-flag' : 'far fa-flag'"></i>
+                    <span x-text="isFlagged ? 'Unflag Claim' : 'Flag Claim'"></span>
                 </button>
             </div>
+            
+            <div class="notes-input-section">
+                <textarea 
+                    class="text-input"
+                    x-model="noteText"
+                    placeholder="Enter your note here (max 100 characters)..."
+                    maxlength="100"
+                    @input="updateCharCount()"
+                ></textarea>
+                
+                <div class="char-counter" 
+                    :class="{
+                        'warning': charCount > 80,
+                        'danger': charCount >= 95
+                    }">
+                    <span x-text="charCount"></span>/100 characters
+                </div>
+                
+                <button 
+                    class="submit-btn"
+                    :disabled="noteText.trim().length === 0"
+                    @click="submitNote()"
+                >
+                    <i class="fas fa-paper-plane"></i>
+                    Submit Note
+                </button>
+            </div>
         </div>
-    </div>
+    </template>
 </div>
