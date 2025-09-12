@@ -153,11 +153,49 @@ function notesApp() {
             return this.$store.patientData.selectedPatient?.flag || false;
         },
 
-        toggleFlag() {
-            // Don't set this.isFlagged - instead update the store directly
-            if (this.$store.patientData.selectedPatient) {
-                this.$store.patientData.selectedPatient.flag = !this.$store.patientData.selectedPatient.flag;
-                console.log('Flag toggled:', this.$store.patientData.selectedPatient.flag ? 'Flagged' : 'Unflagged');
+        getCsrfToken(){
+            return document.querySelector('meta[name="csrf-token"]').content;
+        },
+
+        async toggleFlag() {
+            if (!this.$store.patientData.selectedPatient) return;
+            
+            const currentFlag = this.$store.patientData.selectedPatient.flag;
+            const newFlag = !currentFlag;
+            const claimId = this.$store.patientData.selectedPatient.id;
+            
+            //Optimistically update UI
+            this.$store.patientData.selectedPatient.flag = newFlag;
+            
+            try {
+                const response = await fetch(`/api/list/${claimId}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken(),
+                    },
+                    body: JSON.stringify({
+                        flag: newFlag
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Flag updated successfully:', data);
+                
+                //Sync with server response if needed
+                if (data.flag !== undefined) {
+                    this.$store.patientData.selectedPatient.flag = data.flag;
+                }
+                
+            } catch (error) {
+                console.error('Error updating flag:', error);
+                //Revert UI change on error
+                this.$store.patientData.selectedPatient.flag = currentFlag;
+                alert('Failed to update flag. Please try again.');
             }
         },
         
