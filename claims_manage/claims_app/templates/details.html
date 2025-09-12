@@ -1,114 +1,124 @@
 <div class="row row3" x-data="{}">
-    <template x-if="$store.patientData.selectedPatient">
-        <div class="card-medical">
-            <div class="card-header">
-                <h3 x-text="$store.patientData.selectedPatient?.patient_name" class="patient-name"></h3>
-                <span x-text="$store.patientData.selectedPatient?.status" 
-                x-bind:class="'s ' + $store.patientData.selectedPatient?.status.toLowerCase().replace(' ', '-')"
-                ></span>
-            </div>
-
-            <div class="claim-info">
-                <strong>Claim ID:</strong> <span x-text="$store.patientData.selectedPatient?.id"></span><br>
-                <strong>Discharge:</strong> <span x-text="$store.patientData.selectedPatient?.discharge_date"></span>
-            </div>
-
-            <div class="financial-summary">
-                <div class="amount-card">
-                    <div class="amount-value billed">
-                        <span x-text="formatCurrency($store.patientData.selectedPatient?.billed_amount)"></span>
-                    </div>
-                    <div class="amount-label">Billed</div>
-                </div>
-                <div class="amount-card">
-                    <div class="amount-value paid-info">
-                        <span x-text="formatCurrency($store.patientData.selectedPatient?.paid_amount)"></span>
-                    </div>
-                    <div class="amount-label">Paid</div>
-                </div>
-            </div>
-
-            <div class="insurer-info">
-                <strong>Insurer:</strong> <span x-text="$store.patientData.selectedPatient?.insurer_name"></span>
-            </div>
-            
-            <template x-if="$store.patientData.additionalDetails && !$store.patientData.loadingDetails">
-                <div class="insurer-info">
-                    <strong>CPT Codes:</strong> <span x-text="$store.patientData.additionalDetails.cpt_codes || 'N/A'"></span>
-                </div>
-            </template>
-            
-            <template x-if="$store.patientData.loadingDetails">
-                <div class="insurer-info">
-                    <strong>CPT Codes:</strong> <span>Loading...</span>
-                </div>
-            </template>
-            
-            <template x-if="$store.patientData.additionalDetails && !$store.patientData.loadingDetails">
-                <div class="issue-alert" style="margin-top: 0px">
-                    <strong>Denial Reason:</strong>
-                    <small x-text="$store.patientData.additionalDetails.denial_reason || 'N/A'"></small>
-                </div>
-            </template>
-        </div>
-    </template>
-    
-    <!-- Placeholder for the details card -->
+    <!-- Single placeholder that takes over the entire row3 when no patient is selected -->
     <template x-if="!$store.patientData.selectedPatient">
-        <div class="card-medical">
-            <h3 class="card-header">Choose a claim from the table</h3>
+        <div class="card-placeholder" >
+            <div class="placeholder-content">
+                <h3>Select a Claim</h3>
+                <p>Click on any row in the table above to view detailed claim information and manage notes</p>
+                <div class="placeholder-hint">
+                    <small>You'll be able to flag claims and add notes once a claim is selected</small>
+                </div>
+            </div>
         </div>
     </template>
 
-    <template x-if="!$store.patientData.selectedPatient">
-        <div class="card-notes">
-            <h3 class="card-header">Choose a claim from the table</h3>
-        </div>
-    </template>
-
+    <!-- Two cards when patient is selected -->
     <template x-if="$store.patientData.selectedPatient">
-        <div class="card-notes" x-data="notesApp()">
-            <div class="section-header">
-                <i class="fas fa-sticky-note"></i>
-                <h4>Notes & Annotations</h4>
-            </div>
+        <div class="cards-container">
             
-            <div class="flag-section">
-                <button 
-                    class="flag-btn" 
-                    x-bind:class="{ 'flagged' : isFlagged }"
-                    @click="toggleFlag()"
-                >
-                    <i :class="isFlagged ? 'fas fa-flag' : 'far fa-flag'"></i>
-                    <span x-text="isFlagged ? 'Unflag Claim' : 'Flag Claim'"></span>
-                </button>
-            </div>
-            
-            <div class="notes-input-section">
-                <textarea 
-                    class="text-input"
-                    x-model="noteText"
-                    placeholder="Enter your note here (max 100 characters)..."
-                    maxlength="100"
-                    @input="updateCharCount()"
-                ></textarea>
-                
-                <div class="char-counter" 
-                    :class="{
-                        'warning': charCount > 80,
-                        'danger': charCount >= 95
-                    }">
-                    <span x-text="charCount"></span>/100 characters
+            <!-- Medical Card -->
+            <div class="card-medical"
+                 x-transition:enter="transition ease-out duration-600 delay-100"
+                 x-transition:enter-start="opacity-0 transform translate-x-[-20px]"
+                 x-transition:enter-end="opacity-100 transform translate-x-0">
+                <div class="card-header">
+                    <h3 x-text="$store.patientData.selectedPatient?.patient_name" class="patient-name"></h3>
+                    <span x-text="$store.patientData.selectedPatient?.status" 
+                    x-bind:class="'s ' + $store.patientData.selectedPatient?.status.toLowerCase().replace(' ', '-')"
+                    ></span>
+                </div>
+
+                <div class="claim-info">
+                    <strong>Claim ID:</strong> <span x-text="$store.patientData.selectedPatient?.id"></span><br>
+                    <strong>Discharge:</strong> <span x-text="$store.patientData.selectedPatient?.discharge_date"></span>
+                </div>
+
+                <div class="financial-summary">
+                    <div class="amount-card">
+                        <div class="amount-value billed">
+                            <span x-text="formatCurrency($store.patientData.selectedPatient?.billed_amount)"></span>
+                        </div>
+                        <div class="amount-label">Billed</div>
+                    </div>
+                    <div class="amount-card">
+                        <div class="amount-value paid-info">
+                            <span x-text="formatCurrency($store.patientData.selectedPatient?.paid_amount)"></span>
+                        </div>
+                        <div class="amount-label">Paid</div>
+                    </div>
+                </div>
+
+                <div class="insurer-info">
+                    <strong>Insurer:</strong> <span x-text="$store.patientData.selectedPatient?.insurer_name"></span>
                 </div>
                 
-                <button 
-                    class="submit-btn"
-                    :disabled="noteText.trim().length === 0"
-                    @click="submitNote()"
-                >
-                    <i class="fas fa-paper-plane"></i>
-                    Submit Note
-                </button>
+                <template x-if="$store.patientData.additionalDetails && !$store.patientData.loadingDetails">
+                    <div class="insurer-info">
+                        <strong>CPT Codes:</strong> <span x-text="$store.patientData.additionalDetails.cpt_codes || 'N/A'"></span>
+                    </div>
+                </template>
+                
+                <template x-if="$store.patientData.loadingDetails">
+                    <div class="insurer-info">
+                        <strong>CPT Codes:</strong> <span>Loading...</span>
+                    </div>
+                </template>
+                
+                <template x-if="$store.patientData.additionalDetails && !$store.patientData.loadingDetails">
+                    <div class="issue-alert" style="margin-top: 0px">
+                        <strong>Denial Reason:</strong>
+                        <small x-text="$store.patientData.additionalDetails.denial_reason || 'N/A'"></small>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Notes Card -->
+            <div class="card-notes" x-data="notesApp()"
+                 x-transition:enter="transition ease-out duration-600 delay-200"
+                 x-transition:enter-start="opacity-0 transform translate-x-[20px]"
+                 x-transition:enter-end="opacity-100 transform translate-x-0">
+                <div class="section-header">
+                    <i class="fas fa-sticky-note"></i>
+                    <h4>Notes & Annotations</h4>
+                </div>
+                
+                <div class="flag-section">
+                    <button 
+                        class="flag-btn" 
+                        x-bind:class="{ 'flagged' : isFlagged }"
+                        @click="toggleFlag()"
+                    >
+                        <i :class="isFlagged ? 'fas fa-flag' : 'far fa-flag'"></i>
+                        <span x-text="isFlagged ? 'Unflag Claim' : 'Flag Claim'"></span>
+                    </button>
+                </div>
+                
+                <div class="notes-input-section">
+                    <textarea 
+                        class="text-input"
+                        x-model="noteText"
+                        placeholder="Enter your note here (max 100 characters)..."
+                        maxlength="100"
+                        @input="updateCharCount()"
+                    ></textarea>
+                    
+                    <div class="char-counter" 
+                        :class="{
+                            'warning': charCount > 80,
+                            'danger': charCount >= 95
+                        }">
+                        <span x-text="charCount"></span>/100 characters
+                    </div>
+                    
+                    <button 
+                        class="submit-btn"
+                        :disabled="noteText.trim().length === 0"
+                        @click="submitNote()"
+                    >
+                        <i class="fas fa-paper-plane"></i>
+                        Submit Note
+                    </button>
+                </div>
             </div>
         </div>
     </template>
