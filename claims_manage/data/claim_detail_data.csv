@@ -1,4 +1,4 @@
-id|claim_id_id|denial_reason|cpt_codes
+id|claim_id|denial_reason|cpt_codes
 1|30001|Policy terminated before service date|99204,82947,99406
 2|30002|Out-of-network provider|90834,90837
 3|30003|Invalid patient information|82565,99203

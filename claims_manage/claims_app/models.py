@@ -14,7 +14,7 @@ class ClaimList(models.Model):
         return f"{self.patient_name} - {self.billed_amount} - {self.paid_amount} - {self.status} - {self.insurer_name} on {self.discharge_date}"
     
 class ClaimDetails(models.Model):
-    claim_id = models.ForeignKey(ClaimList, on_delete=models.CASCADE, related_name="claims")
+    claim = models.ForeignKey(ClaimList, on_delete=models.CASCADE, related_name="claims")
     denial_reason = models.CharField(max_length=200, null=True)
     cpt_codes= models.CharField(max_length=200)
     flag_stamp = models.DateTimeField(null=True, blank=True)

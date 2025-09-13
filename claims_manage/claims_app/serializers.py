@@ -11,4 +11,4 @@ class ClaimDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClaimDetails
         fields = "__all__"
-        read_only_fields = ['id', 'claim_id_id', 'denial_reason', 'cpt_codes', 'flag_stamp', 'note_stamp']
+        read_only_fields = ['id', 'claim_id', 'denial_reason', 'cpt_codes', 'flag_stamp', 'note_stamp']

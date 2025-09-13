@@ -33,7 +33,7 @@
                 </tr>
 
                 <template x-for="patient in list" :key="patient.id">
-                    <tr :hx-get="`/api/details/?claim_id_id=${patient.id}`" 
+                    <tr :hx-get="`/api/details/?claim_id=${patient.id}`" 
                     hx-swap="none" 
                     style="cursor:pointer"
                     x-bind:class="patient.flag === false ? 'flag-false' : 'flag-true'"  

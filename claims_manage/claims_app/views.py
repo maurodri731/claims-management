@@ -20,7 +20,7 @@ class ClaimDetailsViewSet(ModelViewSet):
     queryset = ClaimDetails.objects.all()
     serializer_class = ClaimDetailsSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = {'claim_id_id' : ['exact'],
+    filterset_fields = {'claim_id' : ['exact'],
                         'denial_reason' : ['exact'],
                         'denial_reason' : ['exact'],
                         'cpt_codes' : ['exact'],
