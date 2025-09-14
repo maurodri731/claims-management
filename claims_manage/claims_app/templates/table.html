@@ -31,7 +31,7 @@
                         <button @click="clearSearch()" style="margin-left: 10px; background: #ef4444; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Clear Search</button>
                     </td>
                 </tr>
-
+                <!-- populates the tables rows -->
                 <template x-for="patient in list" :key="patient.id">
                     <tr :hx-get="`/api/details/?claim_id=${patient.id}`" 
                     hx-swap="none" 

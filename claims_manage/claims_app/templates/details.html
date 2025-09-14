@@ -16,7 +16,7 @@
     <template x-if="$store.patientData.selectedPatient">
         <div class="cards-container">
             
-            <!-- Medical Card -->
+            <!-- "Medical" Card -->
             <div class="card-medical"
                  x-transition:enter="transition ease-out duration-600 delay-100"
                  x-transition:enter-start="opacity-0 transform translate-x-[-20px]"
@@ -27,12 +27,12 @@
                     x-bind:class="'s ' + $store.patientData.selectedPatient?.status.toLowerCase().replace(' ', '-')"
                     ></span>
                 </div>
-
+                <!-- second section of claim details -->
                 <div class="claim-info">
                     <strong>Claim ID:</strong> <span x-text="$store.patientData.selectedPatient?.id"></span><br>
                     <strong>Discharge:</strong> <span x-text="$store.patientData.selectedPatient?.discharge_date"></span>
                 </div>
-
+                <!-- third section of claim details -->
                 <div class="financial-summary">
                     <div class="amount-card">
                         <div class="amount-value billed">
@@ -47,7 +47,7 @@
                         <div class="amount-label">Paid</div>
                     </div>
                 </div>
-
+                <!-- Insurer and CPT  Codes -->
                 <div class="insurer-info">
                     <strong>Insurer:</strong> <span x-text="$store.patientData.selectedPatient?.insurer_name"></span>
                 </div>
@@ -57,13 +57,13 @@
                         <strong>CPT Codes:</strong> <span x-text="$store.patientData.additionalDetails.cpt_codes || 'N/A'"></span>
                     </div>
                 </template>
-                
+                <!-- placeholder, since this part needs a server request to be loaded into the DOM -->
                 <template x-if="$store.patientData.loadingDetails">
                     <div class="insurer-info">
                         <strong>CPT Codes:</strong> <span>Loading...</span>
                     </div>
                 </template>
-                
+                <!-- Denial Reason -->
                 <template x-if="$store.patientData.additionalDetails && !$store.patientData.loadingDetails">
                     <div class="issue-alert" style="margin-top: 0px">
                         <strong>Denial Reason:</strong>
@@ -81,7 +81,7 @@
                     <i class="fas fa-sticky-note"></i>
                     <h4>Notes & Annotations</h4>
                 </div>
-                
+                <!-- Flag button -->
                 <div class="flag-section">
                     <button 
                         class="flag-btn" 
@@ -92,7 +92,7 @@
                         <span x-text="isFlagged ? 'Unflag Claim' : 'Flag Claim'"></span>
                     </button>
                     
-                    <!-- Flag timestamp - only shows when flag exists -->
+                    <!-- timestamps for notes and flags, only show when they exist -->
                     <template x-if="$store.patientData.additionalDetails?.flag_stamp || $store.patientData.additionalDetails?.note_stamp">
                         <div class="timestamp-info flag-timestamp">
                             <i class="fas fa-clock"></i>
@@ -105,7 +105,7 @@
                         </div>
                     </template>
                 </div>
-                
+                <!-- Text box -->
                 <div class="notes-input-section">
                     <textarea 
                         class="text-input"

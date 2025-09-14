@@ -25,7 +25,7 @@
     </template>
 </div>
 
-    <!-- Enhanced modal with proper form structure -->
+    <!-- Modal Start-->
 <div x-data="modalApp()" x-show="$store.modalStore.openModal" x-transition class="modal-overlay" 
         @click.self="$store.modalStore.openModal = false">
     <div class="modal-content" @click.stop>
@@ -48,7 +48,7 @@
                     Apply Filters
                 </button>
             </div>
-            <!-- Filter By Section -->
+            <!-- Filter Section -->
             <div class="modal-section">
                 <h3 class="section-title">
                     <i class="fas fa-filter"></i>
