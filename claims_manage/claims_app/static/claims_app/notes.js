@@ -20,6 +20,10 @@ function notesApp() {
             return this.$store.patientData.additionalDetails?.note && this.$store.patientData.additionalDetails.note.trim().length > 0;
         },
 
+        get hasExistingFlag() {
+            return this.$store.patientData.selectedPatient?.flag || false;
+        },
+
         getCsrfToken(){
             return document.querySelector('meta[name="csrf-token"]').content;
         },
@@ -30,41 +34,111 @@ function notesApp() {
             const currentFlag = this.$store.patientData.selectedPatient.flag;
             const newFlag = !currentFlag;
             const claimId = this.$store.patientData.selectedPatient.id;
-            
-            // Optimistically update UI
-            this.$store.patientData.selectedPatient.flag = newFlag;
-            
+            const hasNote = this.hasExistingNote;
+            const noteId = this.$store.patientData.additionalDetails.noteId;
             try {
-                const response = await fetch(`/api/list/${claimId}/`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': this.getCsrfToken(),
-                    },
-                    body: JSON.stringify({
-                        flag: newFlag
-                    })
-                });
+                let response;
+                
+                if (newFlag) {
+                    // Creating flag
+                    if (!hasNote) {
+                        // POST - creating first item
+                        response = await fetch(`/api/notes-flags/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': this.getCsrfToken(),
+                            },
+                            body: JSON.stringify({
+                                claim: claimId,
+                                flag: true
+                            })
+                        });
+                    } else {
+                        // PATCH - adding flag to existing note
+                        response = await fetch(`/api/notes-flags/${noteId}/`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': this.getCsrfToken(),
+                            },
+                            body: JSON.stringify({
+                                flag: true
+                            })
+                        });
+                    }
+                } else {
+                    // Removing flag
+                    if (hasNote) {
+                        // PATCH - removing flag but keeping note
+                        response = await fetch(`/api/notes-flags/${noteId}/`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': this.getCsrfToken(),
+                            },
+                            body: JSON.stringify({
+                                flag: false
+                            })
+                        });
+                    } else {
+                        // DELETE - removing lone flag
+                        response = await fetch(`/api/notes-flags/${noteId}/`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': this.getCsrfToken(),
+                            },
+                            body: JSON.stringify({
+                            })
+                        });
+                    }
+                }
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
-                const data = await response.json();
-                console.log('Flag updated successfully:', data);
-                
-                // Sync with server response if needed
-                if (data.flag !== undefined) {
+                if (response.status === 200 || response.status === 201) {
+                    // POST/PATCH - has response body
+                    const data = await response.json();
+                    console.log('Flag operation successful:', data);
+                    
+                    // Update selectedPatient flag
                     this.$store.patientData.selectedPatient.flag = data.flag;
+                    
+                    // Update additionalDetails with all fields from response
+                    this.$store.patientData.additionalDetails = {
+                        ...this.$store.patientData.additionalDetails,
+                        noteId: data.id,
+                        note: data.note || '',
+                        flag: data.flag || false,
+                        note_stamp: data.note_stamp || null,
+                        flag_stamp: data.flag_stamp || null
+                    };
+                    
+                    // Update local noteText to match server state
+                    this.noteText = data.note || '';
+                    this.updateCharCount();
+                    
+                } else if (response.status === 204) {
+                    // DELETE - no response body, update optimistically
+                    console.log('Flag deleted successfully');
+                    
+                    // Update selectedPatient flag
+                    this.$store.patientData.selectedPatient.flag = false;
+                    
+                    // Clear flag and flag_stamp from additionalDetails
+                    this.$store.patientData.additionalDetails = {
+                        ...this.$store.patientData.additionalDetails,
+                        noteId: null,
+                        flag: false,
+                        flag_stamp: null
+                    };
                 }
-                
-                // Refresh additional details to get updated flag_stamp
-                await this.refreshAdditionalDetails();
                 
             } catch (error) {
                 console.error('Error updating flag:', error);
-                // Revert UI change on error
-                this.$store.patientData.selectedPatient.flag = currentFlag;
                 alert('Failed to update flag. Please try again.');
             }
         },
@@ -80,24 +154,44 @@ function notesApp() {
             }
             
             const noteText = this.noteText.trim();
-            const claimId = this.$store.patientData.additionalDetails?.id;
+            const claimId = this.$store.patientData.selectedPatient.id;
+            const hasFlag = this.hasExistingFlag;
+            const noteId = this.$store.patientData.additionalDetails?.noteId;
             
-            if (!claimId) {
-                alert('No claim ID available');
+            if (noteText.length === 0) {
+                alert('Note cannot be empty');
                 return;
             }
             
             try {
-                const response = await fetch(`/api/details/${claimId}/`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': this.getCsrfToken(),
-                    },
-                    body: JSON.stringify({
-                        note: noteText // Empty string if cleared, actual note if provided
-                    })
-                });
+                let response;
+                
+                if (!this.hasExistingNote && !hasFlag) {
+                    // POST - creating first item
+                    response = await fetch(`/api/notes-flags/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCsrfToken(),
+                        },
+                        body: JSON.stringify({
+                            claim: claimId,
+                            note: noteText
+                        })
+                    });
+                } else {
+                    // PATCH - updating existing or adding to existing flag
+                    response = await fetch(`/api/notes-flags/${noteId}/`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCsrfToken(),
+                        },
+                        body: JSON.stringify({
+                            note: noteText
+                        })
+                    });
+                }
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -106,20 +200,24 @@ function notesApp() {
                 const data = await response.json();
                 console.log('Note submitted successfully:', data);
                 
-                // Update additionalDetails directly from server response
+                // Update additionalDetails with all fields from response
                 this.$store.patientData.additionalDetails = {
                     ...this.$store.patientData.additionalDetails,
+                    noteId: data.id,
                     note: data.note || '',
+                    flag: data.flag || false,
                     note_stamp: data.note_stamp || null,
-                    // Preserve any other fields that might not be in the response
-                    flag_stamp: data.flag_stamp || this.$store.patientData.additionalDetails.flag_stamp
+                    flag_stamp: data.flag_stamp || null
                 };
+                
+                // Update selectedPatient flag if it changed
+                this.$store.patientData.selectedPatient.flag = data.flag;
                 
                 // Update local noteText to match server state
                 this.noteText = data.note || '';
                 this.updateCharCount();
                 
-                console.log('Note submitted:', noteText || 'Note cleared');
+                console.log('Note submitted:', noteText);
                 
             } catch (error) {
                 console.error('Error submitting note:', error);
@@ -133,46 +231,85 @@ function notesApp() {
                 return;
             }
             
-            const claimId = this.$store.patientData.additionalDetails?.id;
+            const claimId = this.$store.patientData.selectedPatient.id;
+            const hasFlag = this.hasExistingFlag;
+            const noteId = this.$store.patientData.additionalDetails?.noteId;
             
-            if (!claimId) {
-                alert('No claim ID available');
+            if (!noteId) {
+                alert('Unable to delete note: missing record ID');
                 return;
             }
             
             try {
-                const response = await fetch(`/api/details/${claimId}/`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': this.getCsrfToken(),
-                    },
-                    body: JSON.stringify({
-                        note: '' // Empty string to delete the note
-                    })
-                });
+                let response;
+                
+                if (hasFlag) {
+                    // PATCH - removing note but keeping flag
+                    response = await fetch(`/api/notes-flags/${noteId}/`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCsrfToken(),
+                        },
+                        body: JSON.stringify({
+                            note: ''
+                        })
+                    });
+                } else {
+                    // DELETE - removing lone note
+                    response = await fetch(`/api/notes-flags/${noteId}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCsrfToken(),
+                        },
+                        body: JSON.stringify({
+                        })
+                    });
+                }
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
-                const data = await response.json();
-                console.log('Note deleted successfully:', data);
-                
-                // Update additionalDetails directly from server response
-                this.$store.patientData.additionalDetails = {
-                    ...this.$store.patientData.additionalDetails,
-                    note: data.note || '',
-                    note_stamp: data.note_stamp || null,
-                    // Preserve any other fields that might not be in the response
-                    flag_stamp: data.flag_stamp || this.$store.patientData.additionalDetails.flag_stamp
-                };
-                
-                // Clear the local noteText to match server state
-                this.noteText = data.note || '';
-                this.updateCharCount();
-                
-                console.log('Note deleted');
+                if (response.status === 200) {
+                    // PATCH - has response body
+                    const data = await response.json();
+                    console.log('Note deleted successfully:', data);
+                    
+                    // Update additionalDetails with all fields from response including noteId
+                    this.$store.patientData.additionalDetails = {
+                        ...this.$store.patientData.additionalDetails,
+                        noteId: data.id,
+                        note: data.note || '',
+                        flag: data.flag || false,
+                        note_stamp: data.note_stamp || null,
+                        flag_stamp: data.flag_stamp || null
+                    };
+                    
+                    // Update selectedPatient flag if it changed
+                    this.$store.patientData.selectedPatient.flag = data.flag;
+                    
+                    // Update local noteText to match server state
+                    this.noteText = data.note || '';
+                    this.updateCharCount();
+                    
+                } else if (response.status === 204) {
+                    // DELETE - no response body, wait for OK then update optimistically
+                    console.log('Note deleted successfully');
+                    
+                    // Clear note, note_stamp, and noteId from additionalDetails
+                    this.$store.patientData.additionalDetails = {
+                        ...this.$store.patientData.additionalDetails,
+                        noteId: null,
+                        note: '',
+                        note_stamp: null
+                    };
+                    
+                    // Clear local noteText
+                    this.noteText = '';
+                    this.updateCharCount();
+                }
                 
             } catch (error) {
                 console.error('Error deleting note:', error);
@@ -187,7 +324,6 @@ function notesApp() {
             const claimId = this.$store.patientData.additionalDetails.id;
             
             try {
-                // You'll need to create this endpoint or modify existing one
                 console.log(claimId);
                 const response = await fetch(`/api/details/${claimId}/`);
                 

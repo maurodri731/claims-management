@@ -18,6 +18,7 @@ document.addEventListener('alpine:init', () => {
                 details.note = details.nf_details[0].note;
                 details.note_stamp = details.nf_details[0].note_stamp;
                 details.flag_stamp = details.nf_details[0].flag_stamp;
+                details.noteId = details.nf_details[0].note_id || null;
             }
             this.additionalDetails = details;
             this.loadingDetails = false;

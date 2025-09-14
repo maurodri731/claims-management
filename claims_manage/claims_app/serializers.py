@@ -22,7 +22,7 @@ class ClaimDetailsSerializer(serializers.ModelSerializer):
     
     def get_nf_details(self, obj):
         notes_and_flags = getattr(obj.claim, 'prefetched_notes_flags', [])
-        return [{'note' : nf.note, 'note_stamp' : nf.note_stamp, 'flag_stamp' : nf.flag_stamp}
+        return [{'note_id' : nf.id, 'note' : nf.note, 'note_stamp' : nf.note_stamp, 'flag_stamp' : nf.flag_stamp}
                 for nf in notes_and_flags]
 
 class NotesAndFlagsSerializer(serializers.ModelSerializer):
