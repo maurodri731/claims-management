@@ -124,14 +124,37 @@
                         <span x-text="charCount"></span>/100 characters
                     </div>
                     
-                    <button 
-                        class="submit-btn"
-                        :disabled="isSubmitDisabled"
-                        @click="submitNote()"
-                    >
-                        <i class="fas fa-paper-plane"></i>
-                        <span x-text="submitButtonText"></span>
-                    </button>
+                    <!-- Button container - shows single submit button or two buttons side by side -->
+                    <template x-if="!hasExistingNote">
+                        <button 
+                            class="submit-btn"
+                            :disabled="noteText.trim().length === 0"
+                            @click="submitNote()"
+                        >
+                            <i class="fas fa-paper-plane"></i>
+                            Submit Note
+                        </button>
+                    </template>
+
+                    <template x-if="hasExistingNote">
+                        <div class="button-group">
+                            <button 
+                                class="submit-btn half-width"
+                                :disabled="noteText.trim().length === 0"
+                                @click="submitNote()"
+                            >
+                                <i class="fas fa-paper-plane"></i>
+                                Submit Note
+                            </button>
+                            <button 
+                                class="delete-btn half-width"
+                                @click="deleteNote()"
+                            >
+                                <i class="fas fa-trash"></i>
+                                Delete Note
+                            </button>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>

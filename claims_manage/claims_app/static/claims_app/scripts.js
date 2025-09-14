@@ -172,45 +172,22 @@ function notesApp() {
     return {
         noteText: '',
         charCount: 0,
-        initialNoteText: '', // Track the initial state
         
         // Initialize noteText from store when component loads
         init() {
             // Set initial note text from store if it exists
-            console.log(this.$store.patientData.additionalDetails?.note);
-            const storeNote = this.$store.patientData.additionalDetails?.note || '';
-            this.noteText = storeNote;
-            this.initialNoteText = storeNote; // Store the initial state
-            console.log(storeNote)
-            this.updateCharCount();
+            if (this.$store.patientData.additionalDetails?.note) {
+                this.noteText = this.$store.patientData.additionalDetails.note;
+                this.updateCharCount();
+            }
         },
         
         get isFlagged() {
             return this.$store.patientData.selectedPatient?.flag || false;
         },
 
-        // Check if the note has been modified from its initial state
-        get hasNoteChanged() {
-            return this.noteText !== this.initialNoteText;
-        },
-
-        // Check if current note is empty
-        get isNoteEmpty() {
-            return this.noteText.trim().length === 0;
-        },
-
-        // Determine if button should be disabled
-        get isSubmitDisabled() {
-            console.log("yo")
-            return !this.hasNoteChanged;
-        },
-
-        // Dynamic button text based on note state
-        get submitButtonText() {
-            if (this.isNoteEmpty && this.hasNoteChanged) {
-                return 'Delete Note';
-            }
-            return 'Submit Note';
+        get hasExistingNote() {
+            return this.$store.patientData.additionalDetails?.note && this.$store.patientData.additionalDetails.note.trim().length > 0;
         },
 
         getCsrfToken(){
@@ -281,7 +258,6 @@ function notesApp() {
             }
             
             try {
-                // Submit note to server (you'll need to create this endpoint)
                 const response = await fetch(`/api/details/${claimId}/`, {
                     method: 'PATCH',
                     headers: {
@@ -300,17 +276,77 @@ function notesApp() {
                 const data = await response.json();
                 console.log('Note submitted successfully:', data);
                 
-                // Update the initial state to match what was just submitted
-                this.initialNoteText = noteText;
+                // Update additionalDetails directly from server response
+                this.$store.patientData.additionalDetails = {
+                    ...this.$store.patientData.additionalDetails,
+                    note: data.note || '',
+                    note_stamp: data.note_stamp || null,
+                    // Preserve any other fields that might not be in the response
+                    flag_stamp: data.flag_stamp || this.$store.patientData.additionalDetails.flag_stamp
+                };
                 
-                // Refresh additional details to get updated note and note_stamp from server
-                await this.refreshAdditionalDetails();
+                // Update local noteText to match server state
+                this.noteText = data.note || '';
+                this.updateCharCount();
                 
                 console.log('Note submitted:', noteText || 'Note cleared');
                 
             } catch (error) {
                 console.error('Error submitting note:', error);
                 alert('Failed to submit note. Please try again.');
+            }
+        },
+
+        async deleteNote() {
+            if (!this.$store.patientData.selectedPatient) {
+                alert('No claim selected');
+                return;
+            }
+            
+            const claimId = this.$store.patientData.additionalDetails?.id;
+            
+            if (!claimId) {
+                alert('No claim ID available');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/details/${claimId}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken(),
+                    },
+                    body: JSON.stringify({
+                        note: '' // Empty string to delete the note
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Note deleted successfully:', data);
+                
+                // Update additionalDetails directly from server response
+                this.$store.patientData.additionalDetails = {
+                    ...this.$store.patientData.additionalDetails,
+                    note: data.note || '',
+                    note_stamp: data.note_stamp || null,
+                    // Preserve any other fields that might not be in the response
+                    flag_stamp: data.flag_stamp || this.$store.patientData.additionalDetails.flag_stamp
+                };
+                
+                // Clear the local noteText to match server state
+                this.noteText = data.note || '';
+                this.updateCharCount();
+                
+                console.log('Note deleted');
+                
+            } catch (error) {
+                console.error('Error deleting note:', error);
+                alert('Failed to delete note. Please try again.');
             }
         },
         
@@ -340,10 +376,8 @@ function notesApp() {
                     note_stamp: data.note_stamp || null
                 };
                 
-                // Update noteText and initialNoteText to match server state
-                const serverNote = data.note || '';
-                this.noteText = serverNote;
-                this.initialNoteText = serverNote;
+                // Update noteText to match server state
+                this.noteText = data.note || '';
                 this.updateCharCount();
                 
             } catch (error) {
