@@ -14,6 +14,11 @@ document.addEventListener('alpine:init', () => {
         
         setAdditionalDetails(details) {
             console.log('Store: setting additional details', details);
+            if(details.nf_details.length > 0){
+                details.note = details.nf_details[0].note;
+                details.note_stamp = details.nf_details[0].note_stamp;
+                details.flag_stamp = details.nf_details[0].flag_stamp;
+            }
             this.additionalDetails = details;
             this.loadingDetails = false;
         },
