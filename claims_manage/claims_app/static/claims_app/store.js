@@ -1,8 +1,8 @@
 document.addEventListener('alpine:init', () => {
-    //Handles all of patient state
+    //Handles all of patient state, there is also some helper methods to control the transitions (like loading, deleting and adding)
     Alpine.store('patientData', {
-        selectedPatient: null,
-        additionalDetails: null,
+        selectedPatient: null,//saves the ClaimList Details about the patient selected on the table
+        additionalDetails: null,//holds the ClaimDetails and NotesAndFlags related to the selectedPatient
         loadingDetails: false,
         
         selectPatient(patient) {
@@ -31,7 +31,8 @@ document.addEventListener('alpine:init', () => {
         }
     });
 
-    //modal store with filter persistence
+    //modal store with filter persistence, for when the user clicks out of the modal to begin searching with filters on
+    //also allows the combination of several filters, which are filled as query parameters for the url
     Alpine.store('modalStore', {
         openModal: false,
         filters: {

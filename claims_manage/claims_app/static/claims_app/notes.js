@@ -1,11 +1,11 @@
-function notesApp() {
+function notesApp() {//controls the notes and flags in the details card
     return {
         noteText: '',
         charCount: 0,
         
-        // Initialize noteText from store when component loads
+        //Initialize noteText from store when component loads
         init() {
-            // Set initial note text from store if it exists
+            //Set initial note text from store if it exists
             if (this.$store.patientData.additionalDetails?.note) {
                 this.noteText = this.$store.patientData.additionalDetails.note;
                 this.updateCharCount();
@@ -28,7 +28,7 @@ function notesApp() {
             return document.querySelector('meta[name="csrf-token"]').content;
         },
 
-        async toggleFlag() {
+        async toggleFlag() {//controls the flags state. handles it in the client and also makes server calls
             if (!this.$store.patientData.selectedPatient) return;
             
             const currentFlag = this.$store.patientData.selectedPatient.flag;
@@ -40,9 +40,9 @@ function notesApp() {
                 let response;
                 
                 if (newFlag) {
-                    // Creating flag
+                    //Creating flag
                     if (!hasNote) {
-                        // POST - creating first item
+                        //POST - creating first item
                         response = await fetch(`/api/notes-flags/`, {
                             method: 'POST',
                             headers: {
@@ -50,7 +50,7 @@ function notesApp() {
                                 'X-CSRFToken': this.getCsrfToken(),
                             },
                             body: JSON.stringify({
-                                claim: claimId,
+                                claim: claimId,//claimId is the foreign key for the table, and so it is needed to make an instance of NotesAndFlags
                                 flag: true
                             })
                         });
@@ -63,14 +63,14 @@ function notesApp() {
                                 'X-CSRFToken': this.getCsrfToken(),
                             },
                             body: JSON.stringify({
-                                flag: true
+                                flag: true//the server takes care of setting the timestamp for the flag when it receives it
                             })
                         });
                     }
                 } else {
-                    // Removing flag
+                    //Removing flag
                     if (hasNote) {
-                        // PATCH - removing flag but keeping note
+                        //PATCH - removing flag but keeping note, the note would still exist in this case, so DELETE wouldn't make sense
                         response = await fetch(`/api/notes-flags/${noteId}/`, {
                             method: 'PATCH',
                             headers: {
@@ -82,7 +82,7 @@ function notesApp() {
                             })
                         });
                     } else {
-                        // DELETE - removing lone flag
+                        //DELETE - removing lone flag, the record is unnecessary if it isn't storing anything
                         response = await fetch(`/api/notes-flags/${noteId}/`, {
                             method: 'DELETE',
                             headers: {
@@ -100,14 +100,14 @@ function notesApp() {
                 }
                 
                 if (response.status === 200 || response.status === 201) {
-                    // POST/PATCH - has response body
+                    //POST/PATCH - leverage the updated response body of these methods to update the timestamp of the flag
                     const data = await response.json();
                     console.log('Flag operation successful:', data);
                     
-                    // Update selectedPatient flag
+                    //Update selectedPatient flag
                     this.$store.patientData.selectedPatient.flag = data.flag;
                     
-                    // Update additionalDetails with all fields from response
+                    //Update additionalDetails with all fields from response
                     this.$store.patientData.additionalDetails = {
                         ...this.$store.patientData.additionalDetails,
                         noteId: data.id,
@@ -117,18 +117,18 @@ function notesApp() {
                         flag_stamp: data.flag_stamp || null
                     };
                     
-                    // Update local noteText to match server state
+                    //Update local noteText to match server state
                     this.noteText = data.note || '';
                     this.updateCharCount();
                     
-                } else if (response.status === 204) {
-                    // DELETE - no response body, update optimistically
+                } else if (response.status === 204) {//the flag would only be deleted if this status is returned, otherwise it would rollback
+                    //DELETE - no response body, update optimistically
                     console.log('Flag deleted successfully');
                     
-                    // Update selectedPatient flag
+                    //Update selectedPatient flag
                     this.$store.patientData.selectedPatient.flag = false;
                     
-                    // Clear flag and flag_stamp from additionalDetails
+                    //Clear flag and flag_stamp from additionalDetails
                     this.$store.patientData.additionalDetails = {
                         ...this.$store.patientData.additionalDetails,
                         noteId: null,
@@ -143,11 +143,11 @@ function notesApp() {
             }
         },
         
-        updateCharCount() {
+        updateCharCount() {//helper function for when a note is initially loaded into the DOM
             this.charCount = this.noteText.length;
         },
         
-        async submitNote() {
+        async submitNote() {//controls submitting of the note, in client side and server calls, essentially mirrors what toggleFlag does (could definitely be refactored)
             if (!this.$store.patientData.selectedPatient) {
                 alert('No claim selected');
                 return;
@@ -167,7 +167,7 @@ function notesApp() {
                 let response;
                 
                 if (!this.hasExistingNote && !hasFlag) {
-                    // POST - creating first item
+                    //POST - creating first item
                     response = await fetch(`/api/notes-flags/`, {
                         method: 'POST',
                         headers: {
@@ -180,7 +180,7 @@ function notesApp() {
                         })
                     });
                 } else {
-                    // PATCH - updating existing or adding to existing flag
+                    //PATCH - updating existing or adding to existing flag
                     response = await fetch(`/api/notes-flags/${noteId}/`, {
                         method: 'PATCH',
                         headers: {
@@ -200,7 +200,7 @@ function notesApp() {
                 const data = await response.json();
                 console.log('Note submitted successfully:', data);
                 
-                // Update additionalDetails with all fields from response
+                //Update additionalDetails with all fields from response
                 this.$store.patientData.additionalDetails = {
                     ...this.$store.patientData.additionalDetails,
                     noteId: data.id,
@@ -210,10 +210,10 @@ function notesApp() {
                     flag_stamp: data.flag_stamp || null
                 };
                 
-                // Update selectedPatient flag if it changed
+                //Update selectedPatient flag if it changed
                 this.$store.patientData.selectedPatient.flag = data.flag;
                 
-                // Update local noteText to match server state
+                //Update local noteText to match server state
                 this.noteText = data.note || '';
                 this.updateCharCount();
                 
@@ -244,7 +244,7 @@ function notesApp() {
                 let response;
                 
                 if (hasFlag) {
-                    // PATCH - removing note but keeping flag
+                    //PATCH - removing note but keeping flag
                     response = await fetch(`/api/notes-flags/${noteId}/`, {
                         method: 'PATCH',
                         headers: {
@@ -256,7 +256,7 @@ function notesApp() {
                         })
                     });
                 } else {
-                    // DELETE - removing lone note
+                    //DELETE - removing lone note
                     response = await fetch(`/api/notes-flags/${noteId}/`, {
                         method: 'DELETE',
                         headers: {
@@ -317,46 +317,11 @@ function notesApp() {
             }
         },
         
-        // Helper method to refresh additional details and get updated timestamps
-        async refreshAdditionalDetails() {
-            if (!this.$store.patientData.selectedPatient?.id) return;
-            
-            const claimId = this.$store.patientData.additionalDetails.id;
-            
-            try {
-                console.log(claimId);
-                const response = await fetch(`/api/details/${claimId}/`);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log(data)
-                // Update additional details with fresh data including timestamps
-                this.$store.patientData.additionalDetails = {
-                    ...this.$store.patientData.additionalDetails,
-                    ...data,
-                    flag_stamp: data.flag_stamp || null,
-                    note: data.note || '',
-                    note_stamp: data.note_stamp || null
-                };
-                
-                // Update noteText to match server state
-                this.noteText = data.note || '';
-                this.updateCharCount();
-                
-            } catch (error) {
-                console.error('Error refreshing additional details:', error);
-                // Don't show alert for this as it's a background refresh
-            }
-        },
-        
-        // Method to clear the note
+        //Method to clear the note
         async clearNote() {
             this.noteText = '';
             this.updateCharCount();
-            await this.submitNote(); // This will submit empty note, server will set note_stamp to null
+            await this.submitNote(); //This will submit empty note, server will set note_stamp to null
         }
     }
 }

@@ -22,7 +22,7 @@ function listApp() {
             document.addEventListener('htmx:afterRequest', (e) => {
                 console.log('HTMX Request completed:', e.detail);
                 
-                //Handle additional details response
+                //Handle additional details response, catches the hx-get in the table rows
                 if (e.detail.xhr && e.detail.xhr.responseURL.includes('/api/details/')) {
                     try {
                         const response = JSON.parse(e.detail.xhr.response);
@@ -97,7 +97,7 @@ function listApp() {
             return queryString ? `${baseUrl}?${queryString}` : baseUrl;
         },
 
-        async fetchList() {
+        async fetchList() {//all of the searches, whether with filters or without, pass through here
             if (this.loading || this.allLoaded || this.isSearchMode) return;
             this.loading = true;
 
@@ -108,14 +108,13 @@ function listApp() {
                 const res = await fetch(url);
                 const data = await res.json();
 
-                // FIX 1: Better handling of pagination end
                 if (data.results.length === 0 || data.results.length < this.limit) {
                     this.allLoaded = true;
                 }
                 
                 if (data.results.length > 0) {
                     this.list.push(...data.results);
-                    this.offset += data.results.length; // Use actual returned count instead of limit
+                    this.offset += data.results.length;//Use actual returned count instead of limit
                 }
                 
                 console.log(`Loaded ${data.results.length} items, total: ${this.list.length}, allLoaded: ${this.allLoaded}`);
@@ -136,10 +135,10 @@ function listApp() {
             this.isSearchMode = true;
             this.searchTerm = searchTerm;
 
-            try {
+            try {//it is possible to do partial searches, like for "Virginia" instead of "Virginia Rhodes"
                 //Try exact search first
                 let url = this.buildAPIUrl(true, searchTerm);
-                url = url.replace('patient_name__icontains', 'patient_name'); // Exact search
+                url = url.replace('patient_name__icontains', 'patient_name'); //Exact search
                 
                 let res = await fetch(url);
                 let data = await res.json();
@@ -188,13 +187,13 @@ function listApp() {
             //Update URL for persistence
             this.$store.modalStore.updateURL();
             
-            // NEW FIX: Preserve search when applying filters
+            //NEW FIX: Preserve search when applying filters
             if (this.isSearchMode && this.searchTerm) {
                 console.log('Applying filters while preserving search for:', this.searchTerm);
-                // Keep search mode active and re-run search with new filters
+                //Keep search mode active and re-run search with new filters
                 await this.handleSearch(this.searchTerm);
             } else {
-                // Normal case: reset and fetch with just filters
+                //Normal case: reset and fetch with just filters
                 this.resetList();
                 await this.fetchList();
             }
@@ -210,26 +209,24 @@ function listApp() {
             //Update URL
             this.$store.modalStore.updateURL();
             
-            // NEW FIX: Dispatch event to notify modal to clear its form inputs
             document.dispatchEvent(new CustomEvent('filtersStoreCleared'));
             
-            // FIX 2: Handle search mode when clearing filters
             if (this.isSearchMode && this.searchTerm) {
-                // If we have an active search, re-run the search without filters
+                //If there is an active search, re-run the search without filters
                 console.log('Re-running search without filters for:', this.searchTerm);
                 await this.handleSearch(this.searchTerm);
             } else {
-                // Normal case: reset and reload list
+                //Normal case: reset and reload list
                 this.resetList();
                 await this.fetchList();
             }
         },
 
         //Reset list state
-        resetList() {
+        resetList() {//No filters, no search term
             this.list = [];
             this.offset = 0;
-            this.allLoaded = false; // FIX 1: Always reset allLoaded when resetting list
+            this.allLoaded = false; //Always reset allloaded when resetting list
             if (!this.isSearchMode) {
                 this.loading = false;
             }

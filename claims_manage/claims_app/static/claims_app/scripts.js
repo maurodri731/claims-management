@@ -43,7 +43,7 @@ function modalApp() {
             });
         },
 
-        // NEW METHOD: Clear form inputs without affecting store
+        //Clear form inputs without affecting store, if the search is cleared, you don't want the filters to go away in case you search again
         clearFormInputs() {
             const modal = this.$el.closest('.modal-overlay');
             if (!modal) return;
@@ -102,7 +102,7 @@ function modalApp() {
     }
 }
 
-//Search functionality remains the same
+//Event listener for the search bar
 document.addEventListener('DOMContentLoaded', function () {
     const input = document.querySelector('.search-animated input');
     const button = document.querySelector('.search-animated button');
@@ -119,13 +119,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    input.addEventListener('keypress', function(e) {
+    input.addEventListener('keypress', function(e) {//calls handle search if enter is pressed
         if (e.key === 'Enter') {
             handleSearch();
         }
     });
 
-    button.addEventListener('click', handleSearch);
+    button.addEventListener('click', handleSearch);//calls handle search if the search button is pressed
 
     input.addEventListener('input', function(e) {
         if (!e.target.value.trim()) {
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-window.formatCurrency = function(value) {
+window.formatCurrency = function(value) {//helper function to format the dollar amounts
     if (!value && value !== 0) return '';
     const num = parseFloat(value);
     if (isNaN(num)) return value;
@@ -144,7 +144,7 @@ window.formatCurrency = function(value) {
     });
 };
 
-// Add this formatTimestamp function globally (put this before your notesApp function)
+//helper function to format the date and time based on how much time has passed
 function formatTimestamp(timestamp) {
     if (!timestamp) return '';
     
