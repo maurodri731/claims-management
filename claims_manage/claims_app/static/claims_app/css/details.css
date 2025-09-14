@@ -34,8 +34,6 @@
 }
 
 .card-medical::before {
-    /*content: '\f0f8';
-    font-family: 'Font Awesome 6 Free';*/
     font-weight: 900;
     position: absolute;
     top: 8px;
@@ -199,7 +197,7 @@
 .section-header {
     display: flex;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 6px;
     padding-bottom: 8px;
     border-bottom: 1px solid #f0f0f0;
 }
@@ -218,7 +216,7 @@
 }
 
 .flag-section {
-    margin-bottom: 20px;
+    margin-bottom: 6px !important;
 }
 
 .flag-btn {
@@ -296,7 +294,7 @@
     font-size: 0.6rem;
     color: #6c757d;
     margin-top: 4px;
-    margin-bottom: 12px;
+    margin-bottom: 4px;
 }
 
 .char-counter.warning {
@@ -416,4 +414,47 @@
 .cards-container .card-notes {
     flex: 1;
     max-width: 50%;
+}
+
+/* New timestamp styles */
+.timestamp-info {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin-top: 6px;
+    font-size: 0.6rem;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+.timestamp-info i {
+    color: #6c757d;
+    font-size: 0.55rem;
+    opacity: 0.7;
+}
+
+.flag-timestamp {
+    border-left: 3px solid #ff9800;
+}
+
+.note-timestamp {
+    border-left: 3px solid #4CAF50;
+    margin-top: 10px;
+}
+
+.timestamp-info:hover {
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+}
+
+/* Add some breathing room when timestamps are present */
+.flag-section:has(.flag-timestamp) {
+    margin-bottom: 25px;
+}
+
+.notes-input-section:has(.note-timestamp) {
+    padding-bottom: 5px;
 }

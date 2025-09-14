@@ -91,12 +91,26 @@
                         <i :class="isFlagged ? 'fas fa-flag' : 'far fa-flag'"></i>
                         <span x-text="isFlagged ? 'Unflag Claim' : 'Flag Claim'"></span>
                     </button>
+                    
+                    <!-- Flag timestamp - only shows when flag exists -->
+                    <template x-if="$store.patientData.additionalDetails?.flag_stamp || $store.patientData.additionalDetails?.note_stamp">
+                        <div class="timestamp-info flag-timestamp">
+                            <i class="fas fa-clock"></i>
+                            <template x-if="$store.patientData.additionalDetails?.flag_stamp">
+                                <span>Flagged: <span x-text="formatTimestamp($store.patientData.additionalDetails?.flag_stamp)"></span></span>
+                            </template>
+                            <template x-if="$store.patientData.additionalDetails?.note_stamp">
+                                <span>Note Created: <span x-text="formatTimestamp($store.patientData.additionalDetails?.note_stamp)"></span></span>
+                            </template>
+                        </div>
+                    </template>
                 </div>
                 
                 <div class="notes-input-section">
                     <textarea 
                         class="text-input"
                         x-model="noteText"
+                        x-bind:value="$store.patientData.additionalDetails?.note"
                         placeholder="Enter your note here (max 100 characters)..."
                         maxlength="100"
                         @input="updateCharCount()"
@@ -112,11 +126,11 @@
                     
                     <button 
                         class="submit-btn"
-                        :disabled="noteText.trim().length === 0"
+                        :disabled="isSubmitDisabled"
                         @click="submitNote()"
                     >
                         <i class="fas fa-paper-plane"></i>
-                        Submit Note
+                        <span x-text="submitButtonText"></span>
                     </button>
                 </div>
             </div>

@@ -144,13 +144,73 @@ window.formatCurrency = function(value) {
     });
 };
 
+// Add this formatTimestamp function globally (put this before your notesApp function)
+function formatTimestamp(timestamp) {
+    if (!timestamp) return '';
+    
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    
+    return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
 function notesApp() {
     return {
         noteText: '',
         charCount: 0,
+        initialNoteText: '', // Track the initial state
+        
+        // Initialize noteText from store when component loads
+        init() {
+            // Set initial note text from store if it exists
+            console.log(this.$store.patientData.additionalDetails?.note);
+            const storeNote = this.$store.patientData.additionalDetails?.note || '';
+            this.noteText = storeNote;
+            this.initialNoteText = storeNote; // Store the initial state
+            console.log(storeNote)
+            this.updateCharCount();
+        },
         
         get isFlagged() {
             return this.$store.patientData.selectedPatient?.flag || false;
+        },
+
+        // Check if the note has been modified from its initial state
+        get hasNoteChanged() {
+            return this.noteText !== this.initialNoteText;
+        },
+
+        // Check if current note is empty
+        get isNoteEmpty() {
+            return this.noteText.trim().length === 0;
+        },
+
+        // Determine if button should be disabled
+        get isSubmitDisabled() {
+            console.log("yo")
+            return !this.hasNoteChanged;
+        },
+
+        // Dynamic button text based on note state
+        get submitButtonText() {
+            if (this.isNoteEmpty && this.hasNoteChanged) {
+                return 'Delete Note';
+            }
+            return 'Submit Note';
         },
 
         getCsrfToken(){
@@ -164,7 +224,7 @@ function notesApp() {
             const newFlag = !currentFlag;
             const claimId = this.$store.patientData.selectedPatient.id;
             
-            //Optimistically update UI
+            // Optimistically update UI
             this.$store.patientData.selectedPatient.flag = newFlag;
             
             try {
@@ -186,14 +246,17 @@ function notesApp() {
                 const data = await response.json();
                 console.log('Flag updated successfully:', data);
                 
-                //Sync with server response if needed
+                // Sync with server response if needed
                 if (data.flag !== undefined) {
                     this.$store.patientData.selectedPatient.flag = data.flag;
                 }
                 
+                // Refresh additional details to get updated flag_stamp
+                await this.refreshAdditionalDetails();
+                
             } catch (error) {
                 console.error('Error updating flag:', error);
-                //Revert UI change on error
+                // Revert UI change on error
                 this.$store.patientData.selectedPatient.flag = currentFlag;
                 alert('Failed to update flag. Please try again.');
             }
@@ -203,13 +266,97 @@ function notesApp() {
             this.charCount = this.noteText.length;
         },
         
-        submitNote() {
-            if (this.noteText.trim().length > 0) {
-                console.log('Note submitted:', this.noteText);
-                alert('Note submitted: ' + this.noteText);
-                this.noteText = '';
-                this.charCount = 0;
+        async submitNote() {
+            if (!this.$store.patientData.selectedPatient) {
+                alert('No claim selected');
+                return;
             }
+            
+            const noteText = this.noteText.trim();
+            const claimId = this.$store.patientData.additionalDetails?.id;
+            
+            if (!claimId) {
+                alert('No claim ID available');
+                return;
+            }
+            
+            try {
+                // Submit note to server (you'll need to create this endpoint)
+                const response = await fetch(`/api/details/${claimId}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken(),
+                    },
+                    body: JSON.stringify({
+                        note: noteText // Empty string if cleared, actual note if provided
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Note submitted successfully:', data);
+                
+                // Update the initial state to match what was just submitted
+                this.initialNoteText = noteText;
+                
+                // Refresh additional details to get updated note and note_stamp from server
+                await this.refreshAdditionalDetails();
+                
+                console.log('Note submitted:', noteText || 'Note cleared');
+                
+            } catch (error) {
+                console.error('Error submitting note:', error);
+                alert('Failed to submit note. Please try again.');
+            }
+        },
+        
+        // Helper method to refresh additional details and get updated timestamps
+        async refreshAdditionalDetails() {
+            if (!this.$store.patientData.selectedPatient?.id) return;
+            
+            const claimId = this.$store.patientData.additionalDetails.id;
+            
+            try {
+                // You'll need to create this endpoint or modify existing one
+                console.log(claimId);
+                const response = await fetch(`/api/details/${claimId}/`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log(data)
+                // Update additional details with fresh data including timestamps
+                this.$store.patientData.additionalDetails = {
+                    ...this.$store.patientData.additionalDetails,
+                    ...data,
+                    flag_stamp: data.flag_stamp || null,
+                    note: data.note || '',
+                    note_stamp: data.note_stamp || null
+                };
+                
+                // Update noteText and initialNoteText to match server state
+                const serverNote = data.note || '';
+                this.noteText = serverNote;
+                this.initialNoteText = serverNote;
+                this.updateCharCount();
+                
+            } catch (error) {
+                console.error('Error refreshing additional details:', error);
+                // Don't show alert for this as it's a background refresh
+            }
+        },
+        
+        // Method to clear the note
+        async clearNote() {
+            this.noteText = '';
+            this.updateCharCount();
+            await this.submitNote(); // This will submit empty note, server will set note_stamp to null
         }
     }
 }
