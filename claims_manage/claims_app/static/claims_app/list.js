@@ -70,15 +70,17 @@ function listApp() {
         },
 
         //Build the API URL with current filters and pagination
-        buildAPIUrl(isSearch = false, searchTerm = '') {
+        buildAPIUrl(isSearch = false, searchTerm = '', includePagination = true) {
             const baseUrl = '/api/list/';
             const params = new URLSearchParams();
             
             //Add search parameters if in search mode
             if (isSearch && searchTerm) {
                 params.append('patient_name__icontains', searchTerm);
-            } else if (!isSearch) {
-                //Add pagination for normal list view
+            }
+            
+            //Add pagination parameters when needed
+            if (includePagination) {
                 params.append('offset', this.offset);
                 params.append('limit', this.limit);
             }
@@ -98,11 +100,13 @@ function listApp() {
         },
 
         async fetchList() {//all of the searches, whether with filters or without, pass through here
-            if (this.loading || this.allLoaded || this.isSearchMode) return;
+            if (this.loading || this.allLoaded) return;
             this.loading = true;
 
             try {
-                const url = this.buildAPIUrl();
+                const url = this.isSearchMode ? 
+                    this.buildAPIUrl(true, this.searchTerm, true) : 
+                    this.buildAPIUrl(false, '', true);
                 console.log('Fetching list from:', url);
                 
                 const res = await fetch(url);
@@ -134,23 +138,37 @@ function listApp() {
             this.loading = true;
             this.isSearchMode = true;
             this.searchTerm = searchTerm;
+            
+            // Reset pagination for new search
+            this.resetList();
 
             try {//it is possible to do partial searches, like for "Virginia" instead of "Virginia Rhodes"
                 //Try exact search first
-                let url = this.buildAPIUrl(true, searchTerm);
+                let url = this.buildAPIUrl(true, searchTerm, false); // Don't include pagination for initial exact search
                 url = url.replace('patient_name__icontains', 'patient_name'); //Exact search
                 
                 let res = await fetch(url);
                 let data = await res.json();
                 
                 if (data.results.length === 0) {
-                    //Fall back to partial search
-                    url = this.buildAPIUrl(true, searchTerm);
+                    //Fall back to partial search with pagination
+                    url = this.buildAPIUrl(true, searchTerm, true);
                     res = await fetch(url);
                     data = await res.json();
                 }
                 
                 this.list = data.results || [];
+                
+                // Update pagination state based on results
+                if (data.results.length > 0) {
+                    this.offset += data.results.length;
+                    if (data.results.length < this.limit) {
+                        this.allLoaded = true;
+                    }
+                } else {
+                    this.allLoaded = true;
+                }
+                
                 console.log(`Search completed for "${searchTerm}": ${this.list.length} results found`);
             } catch (error) {
                 console.error('Search error:', error);
@@ -187,7 +205,6 @@ function listApp() {
             //Update URL for persistence
             this.$store.modalStore.updateURL();
             
-            //NEW FIX: Preserve search when applying filters
             if (this.isSearchMode && this.searchTerm) {
                 console.log('Applying filters while preserving search for:', this.searchTerm);
                 //Keep search mode active and re-run search with new filters
@@ -234,7 +251,7 @@ function listApp() {
 
         //Method to check if we should show the infinite scroll loader
         shouldShowLoader() {
-            return !this.allLoaded && !this.isSearchMode && !this.loading;
+            return !this.allLoaded && !this.loading;
         },
 
         //Get active filters count for UI display
