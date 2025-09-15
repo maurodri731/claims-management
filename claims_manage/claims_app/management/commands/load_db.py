@@ -3,7 +3,9 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from claims_app.models import ClaimDetails, ClaimList
 
-
+'''
+Load the data files for the database. The List has to go first because it contains the foreign key the Details rely on
+'''
 class Command(BaseCommand):
     help = "Load ClaimDetails first, then ClaimList from CSV files"
 

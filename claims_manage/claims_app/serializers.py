@@ -6,9 +6,9 @@ class ClaimListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClaimList
-        fields = "__all__"  # <- for debugging
-        extra_fields = ['flag']
-
+        fields = "__all__"
+        extra_fields = ['flag']#this is from the NotesAndFlags table
+    #Append the flag to the end of the response, avoid having to make 2 server calls
     def get_flag(self, obj):
         return any(nf.flag for nf in obj.notes_and_flags.all())
 
@@ -19,7 +19,7 @@ class ClaimDetailsSerializer(serializers.ModelSerializer):
         model = ClaimDetails
         fields = "__all__"
         read_only_fields = ['id', 'claim_id', 'denial_reason', 'cpt_codes']
-    
+    #Add the id of the NotesAndFlags record, along with the note, the flag_stamp and the note_stamp
     def get_nf_details(self, obj):
         notes_and_flags = getattr(obj.claim, 'prefetched_notes_flags', [])
         return [{'note_id' : nf.id, 'note' : nf.note, 'note_stamp' : nf.note_stamp, 'flag_stamp' : nf.flag_stamp}

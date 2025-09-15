@@ -1,6 +1,7 @@
 from django.db import models
 
 # Create your models here.
+#name the fields exactly as they appear on the csv
 class ClaimList(models.Model):
     patient_name = models.CharField(max_length=200)
     billed_amount = models.DecimalField(max_digits=15, decimal_places=2)
@@ -21,8 +22,8 @@ class ClaimDetails(models.Model):
         return f"{self.claim_id} - {self.denial_reason} - {self.cpt_codes}"
     
 class NotesAndFlags(models.Model):
-    claim = models.ForeignKey(ClaimList, on_delete=models.CASCADE, related_name="notes_and_flags")
-    flag = models.BooleanField(default=False)
+    claim = models.ForeignKey(ClaimList, on_delete=models.CASCADE, related_name="notes_and_flags")#the record needs a claim_id in order to exist
+    flag = models.BooleanField(default=False)#need default values for when the record is initally created
     note = models.TextField(default="",blank=True)
     note_stamp = models.DateTimeField(null=True, blank=True)
     flag_stamp = models.DateTimeField(null=True, blank=True)
