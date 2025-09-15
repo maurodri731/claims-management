@@ -76,6 +76,7 @@ function listApp() {
             
             //Add search parameters if in search mode
             if (isSearch && searchTerm) {
+                // Default to name search, will be replaced in handleSearch if needed
                 params.append('patient_name__icontains', searchTerm);
             }
             
@@ -129,9 +130,97 @@ function listApp() {
             this.loading = false;
         },
 
+        //Validate search input type
+        validateSearchInput(searchTerm) {
+            const trimmedTerm = searchTerm.trim();
+            const hasNumbers = /\d/.test(trimmedTerm);
+            const hasLetters = /[a-zA-Z]/.test(trimmedTerm);
+            const hasSpaces = /\s/.test(trimmedTerm);
+            
+            if (hasNumbers && hasLetters) {
+                return { valid: false, type: 'mixed' };
+            } else if (hasNumbers && !hasLetters) {
+                return { valid: true, type: 'id' };
+            } else if ((hasLetters || hasSpaces) && !hasNumbers) {
+                return { valid: true, type: 'name' };
+            } else {
+                return { valid: false, type: 'invalid' };
+            }
+        },
+
+        // Show error popup for invalid search
+        showSearchError() {
+            // Create and show popup
+            const popup = document.createElement('div');
+            popup.className = 'search-error-popup';
+            popup.innerHTML = `
+                <div class="popup-content">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Search cannot contain both numbers and letters</span>
+                    <button class="popup-close" onclick="this.parentElement.parentElement.remove()">×</button>
+                </div>
+            `;
+            
+            // Add styles if not already present
+            if (!document.querySelector('#search-error-styles')) {
+                const styles = document.createElement('style');
+                styles.id = 'search-error-styles';
+                styles.textContent = `
+                    .search-error-popup {
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        z-index: 9999;
+                        background: #dc3545;
+                        color: white;
+                        padding: 12px 16px;
+                        border-radius: 6px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                        font-size: 14px;
+                        animation: slideIn 0.3s ease-out;
+                    }
+                    .popup-content {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                    .popup-close {
+                        background: none;
+                        border: none;
+                        color: white;
+                        font-size: 18px;
+                        cursor: pointer;
+                        padding: 0;
+                        margin-left: 8px;
+                    }
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(styles);
+            }
+            
+            document.body.appendChild(popup);
+            
+            //Auto remove after 4 seconds
+            setTimeout(() => {
+                if (popup.parentElement) {
+                    popup.remove();
+                }
+            }, 4000);
+        },
+
         async handleSearch(searchTerm) {
             if (!searchTerm.trim()) {
                 this.clearSearch();
+                return;
+            }
+
+            //Validate search input
+            const validation = this.validateSearchInput(searchTerm);
+            if (!validation.valid) {
+                this.showSearchError();
                 return;
             }
 
@@ -139,22 +228,38 @@ function listApp() {
             this.isSearchMode = true;
             this.searchTerm = searchTerm;
             
-            // Reset pagination for new search
+            //Reset pagination for new search
             this.resetList();
 
-            try {//it is possible to do partial searches, like for "Virginia" instead of "Virginia Rhodes"
-                //Try exact search first
-                let url = this.buildAPIUrl(true, searchTerm, false); // Don't include pagination for initial exact search
-                url = url.replace('patient_name__icontains', 'patient_name'); //Exact search
+            try {
+                let url, res, data;
                 
-                let res = await fetch(url);
-                let data = await res.json();
-                
-                if (data.results.length === 0) {
-                    //Fall back to partial search with pagination
+                if (validation.type === 'id') {
+                    //ID search - exact match only, no partial search
                     url = this.buildAPIUrl(true, searchTerm, true);
+                    url = url.replace('patient_name__icontains', 'id'); //Search by ID field
+                    
                     res = await fetch(url);
                     data = await res.json();
+                    
+                    console.log(`ID search completed for "${searchTerm}": ${data.results.length} results found`);
+                } else if (validation.type === 'name') {
+                    //Name search - try exact first, then partial
+                    //Try exact search first
+                    url = this.buildAPIUrl(true, searchTerm, false); //Don't include pagination for initial exact search
+                    url = url.replace('patient_name__icontains', 'patient_name'); //Exact search
+                    
+                    res = await fetch(url);
+                    data = await res.json();
+                    
+                    if (data.results.length === 0) {
+                        //Fall back to partial search with pagination
+                        url = this.buildAPIUrl(true, searchTerm, true);
+                        res = await fetch(url);
+                        data = await res.json();
+                    }
+                    
+                    console.log(`Name search completed for "${searchTerm}": ${data.results.length} results found`);
                 }
                 
                 this.list = data.results || [];
@@ -169,7 +274,6 @@ function listApp() {
                     this.allLoaded = true;
                 }
                 
-                console.log(`Search completed for "${searchTerm}": ${this.list.length} results found`);
             } catch (error) {
                 console.error('Search error:', error);
                 this.list = [];
@@ -205,6 +309,7 @@ function listApp() {
             //Update URL for persistence
             this.$store.modalStore.updateURL();
             
+            //NEW FIX: Preserve search when applying filters
             if (this.isSearchMode && this.searchTerm) {
                 console.log('Applying filters while preserving search for:', this.searchTerm);
                 //Keep search mode active and re-run search with new filters
