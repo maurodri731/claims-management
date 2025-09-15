@@ -16,6 +16,7 @@
   - If you want to APPEND data to the tables- "python manage.py load_db --append --details-file [filepath equivalent to details file] --list-file [filepath equivalent to list file]
   - If you want to REPLACE data - "python manage.py load_db --details-file [filepath equivalent to details file] --list-file [filepath equivalent to list file]" 
   - Note how the "--append" option goes away
+  - This command was created for .csv files only. The command only works if the delimiter between fields is the '|' character, so please make sure this is the case.
 #### The server is ready to run!!!
 6. Now type "python manage.py runserver" in your terminal and follow the link it gives you or type in your browser -"http://127.0.0.1:8000/", you can also run "python manage.py runserver [port#]" if for whatever reason 8000 is occupied.
 
