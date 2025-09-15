@@ -2,7 +2,7 @@
 1. Install Django, django-filter and djangorestframework into your virtual environment
 This is how you packages list should look like after doing the 3 installs
 
-<img width="600" height="200" alt="image" src="https://github.com/user-attachments/assets/75160251-e42f-4b6e-808a-849aebf2a676"
+! (<img width="600" height="200" alt="image" src="https://github.com/user-attachments/assets/75160251-e42f-4b6e-808a-849aebf2a676")
 3. Clone the repo, there is several methods to this and I would recommend doing it by url
 4. In your terminal, navigate to /claims-management/claims_manage/ - this is where the magic happens (the picture also shows the path)
 5. Load database migrations by running the following command in your terminal "python manage.py migrate"
