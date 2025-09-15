@@ -3,9 +3,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from claims_app.models import ClaimDetails, ClaimList
 
-'''
-Load the data files for the database. The List has to go first because it contains the foreign key the Details rely on
-'''
+
 class Command(BaseCommand):
     help = "Load ClaimDetails first, then ClaimList from CSV files"
 
@@ -15,10 +13,21 @@ class Command(BaseCommand):
             action='store_true',
             help='Append data instead of clearing existing records'
         )
+        parser.add_argument(
+            '--details-file',
+            type=str,
+            help='Optional path to ClaimDetails CSV file (default: data\\claim_detail_data.csv)'
+        )
+        parser.add_argument(
+            '--list-file',
+            type=str,
+            help='Optional path to ClaimList CSV file (default: data\\claim_list_data.csv)'
+        )
 
     def handle(self, *args, **options):
-        details_file = "data\\claim_detail_data.csv"
-        list_file = "data\\claim_list_data.csv"
+        # Default file paths
+        details_file = options['details_file'] or "data\\claim_detail_data.csv"
+        list_file = options['list_file'] or "data\\claim_list_data.csv"
 
         fk_fields = {
             f.name: f for f in ClaimDetails._meta.get_fields()
